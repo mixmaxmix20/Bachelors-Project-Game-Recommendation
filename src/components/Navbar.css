@@ -1,0 +1,96 @@
+.navbar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 60px;
+  height: 100vh;
+  background-color: #1f2326;
+  /* background: linear-gradient(135deg, #1e3c72, #2a5298); */
+  color: white;
+  padding: 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 3px 0 5px rgba(0, 0, 0, 0.2);
+  font-family: 'Arial', sans-serif;
+  transition: width 0.3s ease;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.navbar:hover {
+  width: 250px;
+}
+
+.navbar h1 {
+  font-size: 24px;
+  padding: 15px 70px 10px;
+  margin-bottom: 20px;
+  color: white;
+  text-align: center;
+  font-weight: bold;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  overflow: hidden;
+}
+
+.navbar:hover h1 {
+  opacity: 1;
+}
+
+.navbar-list {
+  padding: 0;
+  margin-left: 10px;
+  list-style: none;
+  width: 100%;
+}
+
+.navbar-item {
+  display: flex;
+  align-items: center;
+  color: white;
+  padding: 15px 20px;
+  text-decoration: none;
+  font-size: 18px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  transition: background 0.3s, transform 0.2s, opacity 0.3s;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.navbar:hover .navbar-item {
+  opacity: 1;
+}
+
+.navbar-item {
+  font-size: 20px;
+  transition-duration: 0.4s;
+  background-color: #1f2326;
+  width: 88%;
+  /* transition: color 0.3s; */
+}
+
+.navbar:hover {
+  color: #ffdd57;
+}
+
+.navbar-item:hover {
+  background-color: #2b2d39;
+  transform: scale(1.05);
+}
+
+.navbar-item span {
+  display: none;
+  white-space: nowrap;
+}
+
+.navbar:hover .navbar-item span {
+  display: inline-block;
+}
+
+.logout:hover {
+  background-color: red;
+}
