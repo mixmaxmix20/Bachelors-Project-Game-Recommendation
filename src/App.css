@@ -1,12 +1,6 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
-* {
-  margin: 0;
-  padding: 0;
-  font-family: 'Arial', sans-serif
-}
-
 .content {
   flex-grow: 1;
 }

@@ -1,4 +1,3 @@
-import "./Navbar.css";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../../services/firebase";
 import { signOut } from "firebase/auth";
@@ -24,24 +23,40 @@ function Navbar() {
   }
 
   return (
-    <aside className="navbar">
-      <input id="navbar-toggle" type="checkbox" className="drawer-toggle" />
-      <h1>SRG</h1>
-      <nav className="">
-        <button className="navbar-item" onClick={onClickProfile}>
-          <span>Profil</span>
-        </button>
-        <button className="navbar-item" onClick={onClickCollection}>
-          <span>Kolekcja gier</span>
-        </button>
-        <button className="navbar-item" onClick={onClickRecommendation}>
-          <span>Rekomendacje</span>
-        </button>
-        <button className="navbar-item" onClick={onClickLogout}>
-          <span>Wyloguj się</span>
-        </button>
-      </nav>
-    </aside>
+      <aside className="fixed top-0 left-0 h-screen w-15 bg-[#1f2326] text-white p-2.5 box-border flex flex-col items-center shadow-md font-sans transition-[width] duration-300 ease-in-out overflow-hidden z-10 group hover:w-64 hover:text-amber-300">
+        <h1 className="text-2xl py-3.5 px-17.5 pb-2.5 mb-5 text-white text-center font-bold border-b-2 border-white/50 opacity-0 transition-opacity duration-300 ease-in-out overflow-hidden whitespace-nowrap group-hover:opacity-100">
+          SRG
+        </h1>
+        <nav className="p-0 ml-2.5 w-full flex flex-col items-start">
+          <button
+              onClick={onClickProfile}
+              className="flex items-center border-none text-white bg-[#1f2326] py-3 px-6 m-2 text-2xl rounded-lg cursor-pointer w-[88%] opacity-0 overflow-hidden transition-all duration-300 hover:bg-[#2b2d39] hover:scale-105 group-hover:opacity-100"
+          >
+            <span className="hidden whitespace-nowrap group-hover:inline-block">Profil</span>
+          </button>
+
+          <button
+              onClick={onClickCollection}
+              className="flex items-center border-none text-white bg-[#1f2326] py-3 px-6 m-2 text-2xl rounded-lg cursor-pointer w-[88%] opacity-0 overflow-hidden transition-all duration-300 hover:bg-[#2b2d39] hover:scale-105 group-hover:opacity-100"
+          >
+            <span className="hidden whitespace-nowrap group-hover:inline-block">Kolekcja gier</span>
+          </button>
+
+          <button
+              onClick={onClickRecommendation}
+              className="flex items-center border-none text-white bg-[#1f2326] py-3 px-6 m-2 text-2xl rounded-lg cursor-pointer w-[88%] opacity-0 overflow-hidden transition-all duration-300 hover:bg-[#2b2d39] hover:scale-105 group-hover:opacity-100"
+          >
+            <span className="hidden whitespace-nowrap group-hover:inline-block">Rekomendacje</span>
+          </button>
+
+          <button
+              onClick={onClickLogout}
+              className="flex items-center border-none text-white bg-[#1f2326] py-3 px-6 m-2 text-2xl rounded-lg cursor-pointer w-[88%] opacity-0 overflow-hidden transition-all duration-300 hover:bg-red-600 hover:scale-105 group-hover:opacity-100"
+          >
+            <span className="hidden whitespace-nowrap group-hover:inline-block">Wyloguj się</span>
+          </button>
+        </nav>
+      </aside>
   );
 }
 
