@@ -1,32 +1,17 @@
-import Navbar from "./Navbar";
+import Navbar from "../../components/layout/Navbar";
 import "./Collection.css";
 import { useState, useEffect } from "react";
-import {
-  setDoc,
-  collection,
-  getDocs,
-  CollectionReference,
-  doc,
-  deleteDoc,
-  increment,
-} from "firebase/firestore";
-import { db, auth } from "../main";
+import { auth } from "../../services/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import type { Game } from "../types/game";
-
-// interface Game {
-//   id: number;
-//   cover: string;
-//   // genres: { id: number; name: string }[];
-//   name: string;
-//   // platforms: { id: number; name: string }[];
-//   // description: string;
-//   // themes: { id: number; name: string }[];
-//   // total_rating: number;
-//   star_rating: number;
-//   playtime: number;
-//   notes: string;
-// }
+import type { Game } from "../../types/game";
+import {
+  fetchGamesDatabase,
+  fetchUserGames,
+  addGameToUserCollection,
+  deleteGameFromUserCollection,
+  updateUserGameRating,
+  updateUserGamePlaytime,
+} from "../../services/gameService";
 
 interface CollectionProps {}
 
@@ -45,10 +30,9 @@ function Collection(props: CollectionProps) {
 
       const { uid } = user;
       setUid(uid);
-      const gamesList = collection(db, `users/${uid}/games`);
-      const gamesDatabase = collection(db, `gamesDatabase`);
-      loadCollectionData(gamesList);
-      loadGamesData(gamesDatabase);
+
+      const userGamesList = await fetchUserGames(uid);
+      setGames(userGamesList);
     });
 
     return () => {
@@ -56,52 +40,27 @@ function Collection(props: CollectionProps) {
     };
   }, []);
 
-  async function loadGamesData(ref: CollectionReference) {
-    const doc = await getDocs(ref);
-    const gamesDatabase = doc.docs.map((doc) => {
-      const { coverId, name } = doc.data();
-      return {
-        id: parseInt(doc.id, 10),
-        cover: coverId,
-        name: name,
-        star_rating: 0,
-        playtime: 0,
-        notes: "",
-      };
-    });
-    setAllGames(gamesDatabase);
-  }
-
-  async function loadCollectionData(ref: CollectionReference) {
-    const doc = await getDocs(ref);
-    const gamesList = doc.docs.map((doc) => {
-      const { coverId, name, starRating, playtime, notes } = doc.data();
-      return {
-        id: parseInt(doc.id, 10),
-        cover: coverId,
-        name: name,
-        star_rating: starRating,
-        playtime: playtime || 0,
-        notes: notes || "",
-      };
-    });
-    setGames(gamesList);
-  }
-
-  const handleSearch = (query: string) => {
+  const handleSearch = async (query: string) => {
     setSearchQuery(query);
-    if (query.trim().length < 0) {
+    if (!query.trim()) {
       setSearchResults([]);
-    } else {
-      const filteredGames = allGames
-        .filter(
-          (game) =>
-            game.name.toLowerCase().includes(query.toLowerCase()) &&
-            !games.some((g) => g.id === game.id)
-        )
-        .slice(0, 10);
-      setSearchResults(filteredGames);
+      return;
     }
+
+    let currentAllGames = allGames;
+    if (currentAllGames.length === 0) {
+      currentAllGames = await fetchGamesDatabase();
+      setAllGames(currentAllGames);
+    }
+
+    const filteredGames = currentAllGames
+      .filter(
+        (game) =>
+          game.name.toLowerCase().includes(query.toLowerCase()) &&
+          !games.some((g) => g.id === game.id)
+      )
+      .slice(0, 10);
+    setSearchResults(filteredGames);
   };
 
   const addGame = async (game: Game) => {
@@ -111,13 +70,9 @@ function Collection(props: CollectionProps) {
     setSearchQuery("");
     setSearchResults([]);
 
+    if (!uid) return;
     try {
-      const gameDoc = doc(db, `users/${uid}/games`, String(game.id));
-      await setDoc(
-        gameDoc,
-        { name: game.name, coverId: game.cover },
-        { merge: true }
-      );
+      await addGameToUserCollection(uid, game);
     } catch (error) {
       console.error("Bład dodawania gry");
       alert("Nie udalo sie dodac gry");
@@ -125,24 +80,11 @@ function Collection(props: CollectionProps) {
   };
 
   const deleteGame = async (game: Game) => {
-    const previousRating = game.star_rating || 0;
     setGames((prevGames) => prevGames.filter((g) => g.id !== game.id));
+    if (!uid) return;
 
     try {
-      const gameDoc = doc(db, `users/${uid}/games`, String(game.id));
-      await deleteDoc(gameDoc);
-
-      if (previousRating > 0) {
-        const globalGameRef = doc(db, "gamesDatabase", String(game.id));
-        await setDoc(
-          globalGameRef,
-          {
-            totalRatings: increment(-previousRating),
-            ratingCount: increment(-1),
-          },
-          { merge: true }
-        );
-      }
+      await deleteGameFromUserCollection(uid, game);
     } catch (error) {
       console.error("Bład usuwania gry");
       alert("Nie udalo sie usunąć gry");
@@ -157,19 +99,9 @@ function Collection(props: CollectionProps) {
       )
     );
 
+    if (!uid) return;
     try {
-      const gameDoc = doc(db, `users/${uid}/games`, String(gameId));
-      await setDoc(gameDoc, { starRating: star_rating }, { merge: true });
-
-      const globalGameRef = doc(db, "gamesDatabase", String(gameId));
-      await setDoc(
-        globalGameRef,
-        {
-          totalRatings: increment(star_rating - previousRating),
-          ratingCount: previousRating === 0 ? increment(1) : increment(0),
-        },
-        { merge: true }
-      );
+      await updateUserGameRating(uid, gameId, star_rating, previousRating);
     } catch (error) {
       console.error("Bład ratingu");
       alert("Nie udalo sie zmienic ratingu");
@@ -183,9 +115,9 @@ function Collection(props: CollectionProps) {
       )
     );
 
+    if (!uid) return;
     try {
-      const gameDoc = doc(db, `users/${uid}/games`, String(gameId));
-      await setDoc(gameDoc, { playtime: hours }, { merge: true });
+      await updateUserGamePlaytime(uid, gameId, hours);
     } catch (error) {
       console.error("Błąd zapisu czasu gry");
     }
@@ -269,10 +201,3 @@ function Collection(props: CollectionProps) {
 }
 
 export default Collection;
-
-if (import.meta.hot) {
-  import.meta.hot.accept("../types/game", () => {
-    console.log("Przeładowanie Kolekcji");
-    import.meta.hot?.invalidate();
-  });
-}

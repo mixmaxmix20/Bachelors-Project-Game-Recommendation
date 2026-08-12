@@ -1,8 +1,8 @@
-import { auth, db } from "../main";
+import { auth } from "../../services/firebase";
 import "./AddGame.css";
-import Navbar from "./Navbar";
+import Navbar from "../../components/layout/Navbar";
 import { useState } from "react";
-import { collection, doc, setDoc } from "firebase/firestore";
+import { addGameToDatabase } from "../../services/gameService";
 
 interface addGameProps {}
 
@@ -19,19 +19,19 @@ function AddGame(props: addGameProps) {
   const [year, setYear] = useState<number | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    const gamesDatabase = doc(db, `gamesDatabase`, id);
+    e.preventDefault();
     const data = {
       name,
       coverId,
-      platforms: platforms,
-      genres: genres,
-      themes: themes,
+      platforms,
+      genres,
+      themes,
       desc,
       rating,
       time,
       year,
     };
-    setDoc(gamesDatabase, data);
+    await addGameToDatabase(id, data);
     setId("");
     setName("");
     setCoverId("");

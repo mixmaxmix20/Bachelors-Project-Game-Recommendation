@@ -1,14 +1,14 @@
-import Login from "./components/Login";
-import Home from "./components/Home";
+import Login from "./pages/Login/Login";
+import Home from "./pages/Home/Home";
 import "./App.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Register from "./components/Register";
-import Profile from "./components/Profile";
-import Collection from "./components/Collection";
-import Recommendation from "./components/Recommendation";
-import { AuthProvider } from "./contexts/authContext";
-import ProtectedRoute from "./components/ProtectedRoute";
-import AddGame from "./components/AddGame";
+import Register from "./pages/Register/Register";
+import Profile from "./pages/Profile/Profile";
+import Collection from "./pages/Collection/Collection";
+import Recommendation from "./pages/Recommendation/Recommendation";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/common/ProtectedRoute";
+import AddGame from "./pages/AddGame/AddGame";
 
 function App() {
   return (

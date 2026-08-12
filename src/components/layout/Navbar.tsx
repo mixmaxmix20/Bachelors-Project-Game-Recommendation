@@ -1,6 +1,6 @@
 import "./Navbar.css";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../main";
+import { auth } from "../../services/firebase";
 import { signOut } from "firebase/auth";
 
 function Navbar() {
@@ -24,9 +24,10 @@ function Navbar() {
   }
 
   return (
-    <div className="navbar">
+    <aside className="navbar">
+      <input id="navbar-toggle" type="checkbox" className="drawer-toggle" />
       <h1>SRG</h1>
-      <div className="navbar-list">
+      <nav className="">
         <button className="navbar-item" onClick={onClickProfile}>
           <span>Profil</span>
         </button>
@@ -36,11 +37,11 @@ function Navbar() {
         <button className="navbar-item" onClick={onClickRecommendation}>
           <span>Rekomendacje</span>
         </button>
-        <button className="navbar-item logout" onClick={onClickLogout}>
+        <button className="navbar-item" onClick={onClickLogout}>
           <span>Wyloguj się</span>
         </button>
-      </div>
-    </div>
+      </nav>
+    </aside>
   );
 }
 

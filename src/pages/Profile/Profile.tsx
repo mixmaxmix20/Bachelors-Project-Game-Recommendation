@@ -1,14 +1,11 @@
 import { useState, useEffect } from "react";
-import Navbar from "./Navbar";
+import Navbar from "../../components/layout/Navbar";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth, db } from "../main";
+import { auth } from "../../services/firebase";
 import {
-  collection,
-  CollectionReference,
-  doc,
-  getDocs,
-  setDoc,
-} from "firebase/firestore";
+  fetchUserProfilePreferences,
+  saveUserProfilePreferences,
+} from "../../services/gameService";
 import "./Profile.css";
 
 interface LoginProps {}
@@ -137,8 +134,14 @@ function Profile(props: LoginProps) {
       const { uid } = user;
       setUid(uid);
       setEmail(user.email);
-      const profileInfo = collection(db, `users/${uid}/profileInfo`);
-      loadProfileData(profileInfo);
+      const data = await fetchUserProfilePreferences(uid);
+      setReleaseDateMin(data.minYear.toString());
+      setReleaseDateMax(data.maxYear.toString());
+      setGenres(data.genres);
+      setThemes(data.themes);
+      setPlatforms(data.platforms);
+      setLengthMin(data.minTime.toString());
+      setLengthMax(data.maxTime.toString());
     });
 
     return () => {
@@ -146,22 +149,8 @@ function Profile(props: LoginProps) {
     };
   }, []);
 
-  async function loadProfileData(ref: CollectionReference) {
-    const doc = await getDocs(ref);
-    const data = doc.docs[0].data();
-
-    setReleaseDateMin(data.yearStart);
-    setReleaseDateMax(data.yearEnd || "");
-    setGenres(data.genres || "");
-    setThemes(data.themes || "");
-    setPlatforms(data.platforms || "");
-    setLengthMin(data.timeStart?.toString() || 20);
-    setLengthMax(data.timeEnd?.toString() || "");
-  }
-
   async function saveChanges() {
     if (!uid) return;
-    const profileInfo = doc(db, `users/${uid}/profileInfo`, "preferences");
 
     const data = {
       yearStart: parseInt(releaseDateMin),
@@ -173,7 +162,7 @@ function Profile(props: LoginProps) {
       timeEnd: parseInt(lengthMax),
     };
     try {
-      await setDoc(profileInfo, data, { merge: true });
+      await saveUserProfilePreferences(uid, data);
     } catch (error) {
       console.error("Nie udalo sie zaktualizowac danych", error);
       alert("Nie udalo sie zapisac danych");

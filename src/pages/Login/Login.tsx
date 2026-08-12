@@ -1,25 +1,26 @@
-import "./Register.css";
+import "./Login.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { app, auth } from "../main";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../services/firebase";
+import { useAuth } from "../../contexts/AuthContext";
 
-interface RegisterProps {}
+interface LoginProps {}
 
-function Register(props: RegisterProps) {
-  const [email, setEmail] = useState("");
+function Login(props: LoginProps) {
+  const { login } = useAuth();
+  const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
-  const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [emailError, setEmailError] = useState("");
+  const [email, setEmail] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [passwordConfirmError, setPasswordConfirmError] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [generalError, setGeneralError] = useState("");
+
   const navigate = useNavigate();
 
   function onButtonClick() {
     setPasswordError("");
     setEmailError("");
-    setPasswordConfirmError("");
     setGeneralError("");
 
     if ("" === email) {
@@ -32,36 +33,28 @@ function Register(props: RegisterProps) {
       return;
     }
 
-    if (password.length < 7) {
-      setPasswordError("Hasło musi mieć przynajmniej 8 znaków");
-      return;
-    }
-
-    if (password !== passwordConfirm) {
-      setPasswordConfirmError("Hasła muszą być identyczne");
-      return;
-    }
-
-    createUserWithEmailAndPassword(auth, email, password)
+    signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
+        login(userCredential.user);
         navigate("/profile");
       })
       .catch((error) => {
         const errorCode = error.code;
         const errorMessage = error.message;
 
-        alert(`Błąd: Podany email jest już w użyciu`);
+        alert(`Błąd: Niepoprawne dane`);
       });
   }
 
   return (
     <div className="mainContainer">
       <div className="titleContainer">
-        <div>Stwórz profil</div>
+        <div>Zaloguj się</div>
       </div>
       <br />
       <div className="inputContainer">
         <input
+          name="email"
           value={email}
           placeholder="Wpisz swój email"
           onChange={(ev) => setEmail(ev.target.value)}
@@ -72,6 +65,7 @@ function Register(props: RegisterProps) {
       <br />
       <div className="inputContainer">
         <input
+          name="password"
           value={password}
           type="password"
           placeholder="Wpisz swoje hasło"
@@ -83,28 +77,14 @@ function Register(props: RegisterProps) {
       <br />
       <div className="inputContainer">
         <input
-          value={passwordConfirm}
-          type="password"
-          placeholder="Potwierdź swoje hasło"
-          onChange={(ev) => setPasswordConfirm(ev.target.value)}
-          className="inputBox"
-        />
-        <label className="errorLabel">{passwordConfirmError}</label>
-      </div>
-      <br />
-      <div className="inputContainer">
-        <input
-          value="Stwórz profil"
+          value="Zaloguj"
           type="button"
           onClick={onButtonClick}
           className="inputButton"
         />
       </div>
-      <div className="errorContainer">
-        {generalError && <p className="errorMessage">{generalError}</p>}
-      </div>
     </div>
   );
 }
 
-export default Register;
+export default Login;

@@ -1,21 +1,22 @@
-import Navbar from "./Navbar";
+import Navbar from "../../components/layout/Navbar";
 import { useState, useEffect, useCallback } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth, db } from "../main";
+import { auth, db } from "../../services/firebase";
 import {
   collection,
   getDocs,
-  CollectionReference,
   query,
-  limit,
   DocumentData,
-  getDoc,
-  doc,
-  setDoc,
   where,
   and,
   orderBy,
+  limit,
 } from "firebase/firestore";
+import {
+  fetchUserProfilePreferences,
+  fetchRecommendationSettings,
+  saveRecommendationSettings,
+} from "../../services/gameService";
 import "./Recommendation.css";
 
 interface RecommendationProps {}
@@ -252,10 +253,10 @@ function Recommendation(props: RecommendationProps) {
       const { uid } = user;
       setUid(uid);
 
-      const preferences = await getUserPreferences(uid);
+      const preferences = await fetchUserProfilePreferences(uid);
       setUserProfilePreferences(preferences);
 
-      const settings = await getRecommendationSettings(uid);
+      const settings = await fetchRecommendationSettings(uid);
       setPopularityWeight(settings.ratingWeight);
       setGenreWeight(settings.genreWeight);
       setCriticRatingWeight(settings.criticRatingWeight);
@@ -276,7 +277,8 @@ function Recommendation(props: RecommendationProps) {
           where("year", ">=", preferences?.minYear),
           where("year", "<=", preferences?.maxYear)
         ),
-        orderBy("rating", "desc")
+        orderBy("rating", "desc"),
+        limit(100)
       );
       const gamesSnapshot = await getDocs(q);
       const allGamesData = gamesSnapshot.docs.map((doc) => {
@@ -383,56 +385,15 @@ function Recommendation(props: RecommendationProps) {
     criticRatingWeight,
   ]);
 
-  const getUserPreferences = async (uid: string): Promise<Preferences> => {
-    const profileRef = collection(db, `users/${uid}/profileInfo`);
-    const snapshot = await getDocs(profileRef);
-    const data = snapshot.docs[0]?.data() || {};
-
-    return {
-      minTime: data.timeStart || 0,
-      maxTime: data.timeEnd || 1000,
-      minYear: data.yearStart || 1970,
-      maxYear: data.yearEnd || new Date().getFullYear(),
-      platforms: data.platforms || [],
-      genres: data.genres || [],
-      themes: data.themes || [],
-    };
-  };
-
-  const getRecommendationSettings = async (
-    uid: string
-  ): Promise<RecommendationSettings> => {
-    const settingsRef = doc(db, "users", uid, "recommendationInfo", "settings");
-    const snapshot = await getDoc(settingsRef);
-    const data = snapshot.data() || {};
-
-    return {
-      ratingWeight: data.ratingWeight || 0.2,
-      genreWeight: data.genreWeight || 0.5,
-      criticRatingWeight: data.criticRatingWeight,
-    };
-  };
-
   const handleSaveSettings = async () => {
     if (!uid) return;
 
     try {
-      const settingsRef = doc(
-        db,
-        "users",
-        uid,
-        "recommendationInfo",
-        "settings"
-      );
-      await setDoc(
-        settingsRef,
-        {
-          ratingWeight: popularityWeight,
-          genreWeight: genreWeight,
-          criticRatingWeight: criticRatingWeight,
-        },
-        { merge: true }
-      );
+      await saveRecommendationSettings(uid, {
+        ratingWeight: popularityWeight,
+        genreWeight: genreWeight,
+        criticRatingWeight: criticRatingWeight,
+      });
     } catch (error) {
       console.error("Błąd zapisu:", error);
     }
