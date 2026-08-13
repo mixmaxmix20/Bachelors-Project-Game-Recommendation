@@ -1,12 +1,10 @@
-import "./Register.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { app, auth } from "../../services/firebase";
+import { auth } from "../../services/firebase";
+import Button from "../../components/layout/Button";
 
-interface RegisterProps {}
-
-function Register(props: RegisterProps) {
+function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -43,65 +41,58 @@ function Register(props: RegisterProps) {
     }
 
     createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
+      .then(() => {
         navigate("/profile");
       })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-
+      .catch(() => {
         alert(`Błąd: Podany email jest już w użyciu`);
       });
   }
 
   return (
-    <div className="mainContainer">
-      <div className="titleContainer">
-        <div>Stwórz profil</div>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#121416] text-[#ddddff]">
+      <div className="flex flex-col items-center justify-center text-6xl font-bold">
+        <h2>Stwórz profil</h2>
       </div>
       <br />
-      <div className="inputContainer">
+      <div className="flex flex-col items-start justify-center">
         <input
           value={email}
           placeholder="Wpisz swój email"
           onChange={(ev) => setEmail(ev.target.value)}
-          className="inputBox"
+          className="h-12 w-96 text-lg rounded-lg border border-gray-500 pl-2 self-center"
+          autoComplete="off"
         />
-        <label className="errorLabel">{emailError}</label>
+        <label className="text-red-500 text-xs">{emailError}</label>
       </div>
       <br />
-      <div className="inputContainer">
+      <div className="flex flex-col items-start justify-center">
         <input
           value={password}
           type="password"
           placeholder="Wpisz swoje hasło"
           onChange={(ev) => setPassword(ev.target.value)}
-          className="inputBox"
+          className="h-12 w-96 text-lg rounded-lg border border-gray-500 pl-2 self-center"
+          autoComplete="new-password"
         />
-        <label className="errorLabel">{passwordError}</label>
+        <label className="text-red-500 text-xs">{passwordError}</label>
       </div>
       <br />
-      <div className="inputContainer">
+      <div className="flex flex-col items-start justify-center">
         <input
           value={passwordConfirm}
           type="password"
           placeholder="Potwierdź swoje hasło"
           onChange={(ev) => setPasswordConfirm(ev.target.value)}
-          className="inputBox"
+          className="h-12 w-96 text-lg rounded-lg border border-gray-500 pl-2 self-center"
+          autoComplete="new-password"
         />
-        <label className="errorLabel">{passwordConfirmError}</label>
+        <label className="text-red-500 text-xs">{passwordConfirmError}</label>
       </div>
       <br />
-      <div className="inputContainer">
-        <input
-          value="Stwórz profil"
-          type="button"
-          onClick={onButtonClick}
-          className="inputButton"
-        />
-      </div>
-      <div className="errorContainer">
-        {generalError && <p className="errorMessage">{generalError}</p>}
+      <Button onClickPar={onButtonClick} isStandalone={true}>Stwórz profil</Button>
+      <div className="flex flex-col items-center justify-center">
+        {generalError && <p className="text-red-500 text-xs">{generalError}</p>}
       </div>
     </div>
   );

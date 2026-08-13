@@ -13,8 +13,8 @@ function Home() {
   }
 
   return (
-    <div className="mainContainer bg-linear-to-b from-[#1f1f1f] to-[#0d0d0d]">
-      <div className="titleContainer -mt-24 mb-12 text-center">
+    <div className="flex flex-col items-center justify-center min-h-screen text-[#ddddff] bg-gradient-to-b from-[#1f1f1f] to-[#0d0d0d]">
+      <div className="flex flex-col items-center justify-center text-6xl font-bold -mt-24 mb-12 text-center">
         <h2>SRG</h2>
       </div>
       <div className="w-1/2 border-4 border-[#1f2326] bg-[#1f2326] mb-10">
