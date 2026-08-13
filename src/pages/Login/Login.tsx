@@ -1,20 +1,17 @@
-import "./Login.css";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../services/firebase";
 import { useAuth } from "../../contexts/AuthContext";
+import Button from "../../components/layout/Button";
 
-interface LoginProps {}
-
-function Login(props: LoginProps) {
+function Login() {
   const { login } = useAuth();
-  const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [emailError, setEmailError] = useState("");
-  const [generalError, setGeneralError] = useState("");
+  const [, setGeneralError] = useState("");
 
   const navigate = useNavigate();
 
@@ -38,51 +35,41 @@ function Login(props: LoginProps) {
         login(userCredential.user);
         navigate("/profile");
       })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-
+      .catch(() => {
         alert(`Błąd: Niepoprawne dane`);
       });
   }
 
   return (
-    <div className="mainContainer">
-      <div className="titleContainer">
-        <div>Zaloguj się</div>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#121416] text-[#ddddff]">
+      <div className="flex flex-col items-center justify-center text-6xl font-bold">
+        <h2>Logowanie</h2>
       </div>
       <br />
-      <div className="inputContainer">
+      <div className="flex flex-col items-start justify-center">
         <input
           name="email"
           value={email}
           placeholder="Wpisz swój email"
           onChange={(ev) => setEmail(ev.target.value)}
-          className="inputBox"
+          className="h-12 w-96 text-lg rounded-lg border border-gray-500 pl-2 self-center"
         />
-        <label className="errorLabel">{emailError}</label>
+        <label className="text-red-500 text-xs">{emailError}</label>
       </div>
       <br />
-      <div className="inputContainer">
+      <div className="flex flex-col items-start justify-center">
         <input
           name="password"
           value={password}
           type="password"
           placeholder="Wpisz swoje hasło"
           onChange={(ev) => setPassword(ev.target.value)}
-          className="inputBox"
+          className="h-12 w-96 text-lg rounded-lg border border-gray-500 pl-2 self-center"
         />
-        <label className="errorLabel">{passwordError}</label>
+        <label className="text-red-500 text-xs">{passwordError}</label>
       </div>
       <br />
-      <div className="inputContainer">
-        <input
-          value="Zaloguj"
-          type="button"
-          onClick={onButtonClick}
-          className="inputButton"
-        />
-      </div>
+      <Button onClickPar={onButtonClick} isStandalone={true}>Zaloguj się</Button>
     </div>
   );
 }
