@@ -6,11 +6,9 @@ import {
   fetchUserProfilePreferences,
   saveUserProfilePreferences,
 } from "../../services/gameService";
-import "./Profile.css";
+import Button from "../../components/layout/Button";
 
-interface LoginProps {}
-
-function Profile(props: LoginProps) {
+function Profile() {
   const [releaseDateMin, setReleaseDateMin] = useState("");
   const [releaseDateMax, setReleaseDateMax] = useState("");
   const [genres, setGenres] = useState<string[]>([]);
@@ -164,158 +162,134 @@ function Profile(props: LoginProps) {
     try {
       await saveUserProfilePreferences(uid, data);
     } catch (error) {
-      console.error("Nie udalo sie zaktualizowac danych", error);
-      alert("Nie udalo sie zapisac danych");
+      console.error("Nie udało sie zaktualizować danych", error);
+      alert("Nie udało sie zapisać danych");
     }
   }
 
   return (
-    <div className="mainContainer">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#121416] text-[#ddddff]">
       <Navbar />
-      <div className="titleContainer">
-        {/* <h2>Profil</h2> */}
-        <p>Zalogowany jako: {email}</p>
-      </div>
-      <br />
-      <div className="formContainer">
-        <div className="leftColumn">
-          <div className="inputContainer">
-            <label className="bigLabel">Lata wydania: </label>
-            <br />
-            <label>
-              Od: <span className="bold">{releaseDateMin}</span>
+        <h2 className="mt-5">Zalogowany jako: {email}</h2>
+      <div className="grid grid-cols-2 gap-28 min-h-140 items-stretch mt-8">
+        <div className="flex flex-col max-w-150 max-h-full justify-between">
+          <div className="flex flex-col items-start justify-center">
+            <label className="text-xl font-bold mb-5">Lata wydania: </label>
+            <label className="mb-5">
+              Od: <span className="text-xl font-bold">{releaseDateMin}</span>
             </label>
-            <br />
-            <input
-              value={releaseDateMin}
-              type="range"
-              min="1990"
-              max="2025"
-              onChange={(ev) => setReleaseDateMin(ev.target.value)}
-              className="inputBox"
-            />
-            <br />
-            <label>
-              {" "}
-              Do: <span className="bold">{releaseDateMax}</span>
+            <input type="range" min={1990} max={2025} value={releaseDateMin} onChange={(ev) => setReleaseDateMin(ev.target.value)} className="range grow w-150 mb-5" />
+            <label className="mb-5">
+              Do: <span className="text-xl font-bold">{releaseDateMax}</span>
             </label>
-            <br />
-            <input
-              value={releaseDateMax}
-              type="range"
-              min="1990"
-              max="2025"
-              onChange={(ev) => setReleaseDateMax(ev.target.value)}
-              className="inputBox"
-            />
+            <input type="range" min={1990} max={2025} value={releaseDateMax} onChange={(ev) => setReleaseDateMax(ev.target.value)} className="range grow w-150 mb-5" />
           </div>
-          <div className="inputContainer">
-            <label className="bigLabel">Długość gry: </label>
-            <br />
-            <label>
-              Od: <span className="bold">{lengthMin} godzin</span>
+          <div className="flex flex-col items-start justify-center">
+            <label className="text-xl font-bold mb-5">Długość gry: </label>
+            <label className="mb-5">
+              Od: <span className="text-xl font-bold">{lengthMin} godzin</span>
             </label>
-            <br />
-            <input
-              value={lengthMin}
-              type="range"
-              min={1}
-              max={400}
-              onChange={(ev) => setLengthMin(ev.target.value)}
-              className="inputBox"
-            />
-            <br />
-            <label>
-              {" "}
-              Do: <span className="bold">{lengthMax} godzin</span>
+            <input type="range" min={1} max={400} value={lengthMin} onChange={(ev) => setLengthMin(ev.target.value)} className="range grow w-150 mb-5" />
+            <label className="mb-5">
+              Do: <span className="text-xl font-bold">{lengthMax} godzin</span>
             </label>
-            <br />
-            <input
-              value={lengthMax}
-              type="range"
-              min={1}
-              max={400}
-              onChange={(ev) => setLengthMax(ev.target.value)}
-              className="inputBox"
-            />
+            <input type="range" min={1} max={400} value={lengthMax} onChange={(ev) => setLengthMax(ev.target.value)} className="range grow w-150" />
           </div>
         </div>
-        <div className="rightColumn">
-          <div className="inputContainer">
-            <label className="bigLabel">Ulubione gatunki: </label>
-            <br />
-            <div className="selectedAll">
+        <div className="flex flex-col max-w-150 max-h-full justify-between">
+          <div className="flex flex-col items-start justify-center">
+            <label className="text-xl font-bold mb-5">Ulubione gatunki: </label>
+            <div className="flex flex-wrap gap-2 max-w-full mb-5">
               {genres.map((g, index) => (
-                <div key={index} className="selectedOne">
-                  {availableGenres.find((gen) => gen.en === g)?.pl}
-                  <button onClick={() => handleRemoveGenre(g)}>X</button>
+                <div key={index} className="join">
+                  <span className="btn btn-sm join-item bg-[#1f2326] text-white border-neutral-700 pointer-events-none font-normal text-base">
+                    {availableGenres.find((gen) => gen.en === g)?.pl}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-square join-item text-red-500 border-neutral-700 hover:bg-red-600 hover:text-white"
+                    onClick={() => handleRemoveGenre(g)}
+                  >
+                    ✕
+                  </button>
                 </div>
               ))}
             </div>
-            <br />
             <select
-              value={genres}
+              value=""
               onChange={(ev) => {
                 handleAddGenre(ev.target.value);
               }}
-              className="inputBox"
+              className="select h-12 w-150 grow text-lg rounded-lg border border-gray-500 pl-2 self-center bg-[#1f2326] text-white mb-5"
             >
-              <option value="">Wybierz gatunek</option>
-              {availableGenres.map((g, index) => (
+              <option disabled={true} value="">Wybierz gatunek</option>
+              {availableGenres.filter((option) => !genres.includes(option.en)).map((g, index) => (
                 <option key={index} value={g.pl}>
                   {g.pl}
                 </option>
               ))}
             </select>
           </div>
-          <div className="inputContainer">
-            <label className="bigLabel">Ulubione tematyki: </label>
-            <br />
-            <div className="selectedAll">
+          <div className="flex flex-col items-start justify-center">
+            <label className="text-xl font-bold mb-5">Ulubione tematyki: </label>
+            <div className="flex flex-wrap gap-2 max-w-full mb-5">
               {themes.map((g, index) => (
-                <div key={index} className="selectedOne">
-                  {availableThemes.find((gen) => gen.en === g)?.pl}
-                  <button onClick={() => handleRemoveTheme(g)}>X</button>
+                <div key={index} className="join">
+                  <span className="btn btn-sm join-item bg-[#1f2326] text-white border-neutral-700 pointer-events-none font-normal">
+                    {availableThemes.find((gen) => gen.en === g)?.pl}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-square join-item text-red-500 border-neutral-700 hover:bg-red-600 hover:text-white"
+                    onClick={() => handleRemoveTheme(g)}
+                  >
+                    ✕
+                  </button>
                 </div>
               ))}
             </div>
-            <br />
             <select
-              value={themes}
+              value=""
               onChange={(ev) => {
                 handleAddTheme(ev.target.value);
               }}
-              className="inputBox"
+              className="select h-12 w-150 grow text-lg rounded-lg border border-gray-500 pl-2 self-center bg-[#1f2326] text-white mb-5"
             >
-              <option value="">Wybierz tematykę</option>
-              {availableThemes.map((g, index) => (
+              <option disabled={true} value="">Wybierz motyw</option>
+              {availableThemes.filter((option) => !themes.includes(option.en)).map((g, index) => (
                 <option key={index} value={g.pl}>
                   {g.pl}
                 </option>
               ))}
             </select>
           </div>
-          <div className="inputContainer">
-            <label className="bigLabel">Platformy: </label>
-            <br />
-            <div className="selectedAll">
+          <div className="flex flex-col items-start justify-center">
+            <label className="text-xl font-bold mb-5">Platformy: </label>
+            <div className="flex flex-wrap gap-2 max-w-full mb-5">
               {platforms.map((g, index) => (
-                <div key={index} className="selectedOne">
-                  {availablePlatforms.find((gen) => gen === g)}
-                  <button onClick={() => handleRemovePlatform(g)}>X</button>
+                <div key={index} className="join">
+                  <span className="btn btn-sm join-item bg-[#1f2326] text-white border-neutral-700 pointer-events-none font-normal">
+                    {availablePlatforms.find((gen) => gen === g)}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-square join-item text-red-500 border-neutral-700 hover:bg-red-600 hover:text-white"
+                    onClick={() => handleRemovePlatform(g)}
+                  >
+                    ✕
+                  </button>
                 </div>
               ))}
             </div>
-            <br />
             <select
-              value={platforms}
+              value=""
               onChange={(ev) => {
                 handleAddPlatform(ev.target.value);
               }}
-              className="inputBox"
+              className="select h-12 w-150 grow text-lg rounded-lg border border-gray-500 pl-2 self-center bg-[#1f2326] text-white"
             >
-              <option value="">Wybierz platformę</option>
-              {availablePlatforms.map((g, index) => (
+              <option disabled={true} value="">Wybierz platformę</option>
+              {availablePlatforms.filter((option) => !platforms.includes(option)).map((g, index) => (
                 <option key={index} value={g}>
                   {g}
                 </option>
@@ -324,10 +298,8 @@ function Profile(props: LoginProps) {
           </div>
         </div>
       </div>
-      <div className="saveButtonContainer">
-        <button className="button saveButton" onClick={saveChanges}>
-          <span>Zapisz zmiany</span>
-        </button>
+      <div className="mt-10 mb-6">
+        <Button onClickPar={saveChanges} isStandalone={true}>Zapisz zmiany</Button>
       </div>
     </div>
   );
