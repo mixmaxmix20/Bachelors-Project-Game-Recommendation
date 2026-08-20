@@ -1,5 +1,4 @@
 import Navbar from "../../components/layout/Navbar";
-import "./Collection.css";
 import { useState, useEffect } from "react";
 import { auth } from "../../services/firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -13,9 +12,7 @@ import {
   updateUserGamePlaytime,
 } from "../../services/gameService";
 
-interface CollectionProps {}
-
-function Collection(props: CollectionProps) {
+function Collection() {
   const [allGames, setAllGames] = useState<Game[]>([]);
   const [games, setGames] = useState<Game[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -124,31 +121,31 @@ function Collection(props: CollectionProps) {
   };
 
   return (
-    <div className="mainContainer">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#121416] text-[#ddddff] pb-5">
       <Navbar />
-      <div className="titleContainer">{/* <h2>Kolekcja gier</h2> */}</div>
+      <div className="flex flex-col items-center justify-center text-6xl font-bold"></div>
       <br />
-      <div className="searchContainer">
+      <div className="relative mb-4">
         <input
           type="text"
           placeholder="Wyszukaj grę"
           value={searchQuery}
           onChange={(e) => handleSearch(e.target.value)}
-          className="searchInput"
+          className="text-2xl w-150 h-10 p-2 border border-[#ddd] rounded bg-transparent"
         />
         {searchQuery.trim() && (
-          <div className="searchResults">
+          <div className="absolute top-10 left-0 right-0 bg-black border border-[#ddd] rounded max-h-54 overflow-y-auto z-10">
             {searchResults.map((game) => (
               <div
                 key={game.id}
-                className="searchResult"
+                className="flex items-center p-2 cursor-pointer hover:bg-[#585858]"
                 onClick={() => addGame(game)}
               >
                 <img
                   loading="lazy"
                   src={`https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover}.png`}
                   alt={game.name}
-                  className="resultCover"
+                  className="w-17.5 h-22 object-cover mr-2"
                 />
                 <span>{game.name}</span>
               </div>
@@ -156,28 +153,28 @@ function Collection(props: CollectionProps) {
           </div>
         )}
       </div>
-      <div className="gamesContainer">
+      <div className="flex gap-4 flex-wrap justify-center">
         {games.map((game) => (
-          <div key={game.id} className="gameTile">
-            <div
-              className="gameCover"
-              style={{
-                backgroundImage: `url(https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover}.png)`,
-              }}
-            ></div>
-            <h3 className="gameTitle">{game.name}</h3>
-            <div className="stars">
+          <div key={game.id} className="card text-center border border-[#ddd] p-2 rounded-lg">
+            <figure>
+              <img
+              className="bg-cover bg-center"
+              src={`https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover}.png`}
+               alt={`${game.name} cover image`}/>
+            </figure>
+            <h3 className="pt-2.5">{game.name}</h3>
+            <div>
               {[...Array(5)].map((_, index) => (
                 <span
                   key={index}
-                  className={index < game.star_rating ? "star filled" : "star"}
+                  className={`text-2xl cursor-pointer ${index < game.star_rating ? "text-amber-400" : "text-[#ccc]"}`}
                   onClick={() => updateRating(game.id, index + 1)}
                 >
                   &#9733;
                 </span>
               ))}
             </div>
-            <div className="time">
+            <div className="flex items-center gap-1.25 mt-2">
               <input
                 type="number"
                 min="0"
@@ -186,11 +183,11 @@ function Collection(props: CollectionProps) {
                   updatePlaytime(game.id, Number(e.target.value))
                 }
                 placeholder="Czas gry"
-                className="timeInput"
+                className="w-full p-1 border border-[#ddd] rounded m-2 bg-transparent"
               />
-              <span className="timeLabel">godz.</span>
+              <span className="text-sm text-[#666]">godz.</span>
             </div>
-            <div className="deleteButton" onClick={() => deleteGame(game)}>
+            <div className="px-8 self-center cursor-pointer text-white bg-[rgb(203,49,49)] rounded-[5%] hover:bg-red-800" onClick={() => deleteGame(game)}>
               X
             </div>
           </div>
