@@ -17,4 +17,4 @@ Aplikacja analizuje dane wprowadzone przez użytkownika i sugeruje 10 tytułów 
 * **Frontend:** React + TypeScript + Vite
 * **Baza danych:** Firebase Firestore
 * **Autoryzacja:** Firebase Authentication
-* **Stylizacja:** CSS
+* **Stylizacja:** Tailwind CSS + daisyUI
