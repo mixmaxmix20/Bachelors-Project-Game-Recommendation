@@ -2,7 +2,7 @@ export interface Game {
   id: number;
   cover: string;
   name: string;
-  star_rating: number;
+  starRating: number;
   playtime: number;
   notes: string;
 }

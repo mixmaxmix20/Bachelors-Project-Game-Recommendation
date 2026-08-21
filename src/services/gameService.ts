@@ -6,11 +6,6 @@ import {
   setDoc,
   deleteDoc,
   increment,
-  query,
-  where,
-  and,
-  orderBy,
-  CollectionReference,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Game } from "../types/game";
@@ -84,7 +79,7 @@ export const fetchGamesDatabase = async (): Promise<Game[]> => {
           id: parseInt(docSnap.id, 10),
           cover: coverId,
           name: name,
-          star_rating: 0,
+          starRating: 0,
           playtime: 0,
           notes: "",
         };
@@ -110,7 +105,7 @@ export const fetchUserGames = async (uid: string): Promise<Game[]> => {
       id: parseInt(docSnap.id, 10),
       cover: coverId,
       name: name,
-      star_rating: starRating || 0,
+      starRating: starRating || 0,
       playtime: playtime || 0,
       notes: notes || "",
     };
@@ -130,7 +125,7 @@ export const deleteGameFromUserCollection = async (
   uid: string,
   game: Game
 ) => {
-  const previousRating = game.star_rating || 0;
+  const previousRating = game.starRating || 0;
   const gameDoc = doc(db, `users/${uid}/games`, String(game.id));
   await deleteDoc(gameDoc);
 

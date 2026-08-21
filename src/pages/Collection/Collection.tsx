@@ -1,4 +1,5 @@
 import Navbar from "../../components/layout/Navbar";
+import GameCard from "../../components/layout/GameCard";
 import { useState, useEffect } from "react";
 import { auth } from "../../services/firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -62,7 +63,7 @@ function Collection() {
 
   const addGame = async (game: Game) => {
     if (!games.some((g) => g.id === game.id)) {
-      setGames([...games, game]);
+      setGames([game, ...games]);
     }
     setSearchQuery("");
     setSearchResults([]);
@@ -88,21 +89,12 @@ function Collection() {
     }
   };
 
-  const updateRating = async (gameId: number, star_rating: number) => {
-    const previousRating = games.find((g) => g.id === gameId)?.star_rating || 0;
+  const updateRating = async (gameId: number, starRating: number) => {
     setGames((prevGames) =>
       prevGames.map((game) =>
-        game.id === gameId ? { ...game, star_rating } : game
+        game.id === gameId ? { ...game, starRating } : game
       )
     );
-
-    if (!uid) return;
-    try {
-      await updateUserGameRating(uid, gameId, star_rating, previousRating);
-    } catch (error) {
-      console.error("Bład ratingu");
-      alert("Nie udalo sie zmienic ratingu");
-    }
   };
 
   const updatePlaytime = async (gameId: number, hours: number) => {
@@ -111,21 +103,32 @@ function Collection() {
         game.id === gameId ? { ...game, playtime: hours } : game
       )
     );
+  };
+
+  const saveChanges = async (gameId: number, starRating: number, hours: number) => {
+    const previousRating = games.find((g) => g.id === gameId)?.starRating || 0;
+
+    setGames((prevGames) =>
+      prevGames.map((game) =>
+        game.id === gameId ? { ...game, starRating: starRating, playtime: hours } : game
+      )
+    );
 
     if (!uid) return;
     try {
+      await updateUserGameRating(uid, gameId, starRating, previousRating)
       await updateUserGamePlaytime(uid, gameId, hours);
     } catch (error) {
-      console.error("Błąd zapisu czasu gry");
+      console.error("Błąd edycji danych.");
     }
-  };
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#121416] text-[#ddddff] pb-5">
       <Navbar />
       <div className="flex flex-col items-center justify-center text-6xl font-bold"></div>
-      <br />
-      <div className="relative mb-4">
+      {/*Search bar*/}
+      <div className="relative mb-4 mt-5">
         <input
           type="text"
           placeholder="Wyszukaj grę"
@@ -153,44 +156,17 @@ function Collection() {
           </div>
         )}
       </div>
+      {/*Game cards*/}
       <div className="flex gap-4 flex-wrap justify-center">
         {games.map((game) => (
-          <div key={game.id} className="card text-center border border-[#ddd] p-2 rounded-lg">
-            <figure>
-              <img
-              className="bg-cover bg-center"
-              src={`https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover}.png`}
-               alt={`${game.name} cover image`}/>
-            </figure>
-            <h3 className="pt-2.5">{game.name}</h3>
-            <div>
-              {[...Array(5)].map((_, index) => (
-                <span
-                  key={index}
-                  className={`text-2xl cursor-pointer ${index < game.star_rating ? "text-amber-400" : "text-[#ccc]"}`}
-                  onClick={() => updateRating(game.id, index + 1)}
-                >
-                  &#9733;
-                </span>
-              ))}
-            </div>
-            <div className="flex items-center gap-1.25 mt-2">
-              <input
-                type="number"
-                min="0"
-                value={game.playtime || ""}
-                onChange={(e) =>
-                  updatePlaytime(game.id, Number(e.target.value))
-                }
-                placeholder="Czas gry"
-                className="w-full p-1 border border-[#ddd] rounded m-2 bg-transparent"
-              />
-              <span className="text-sm text-[#666]">godz.</span>
-            </div>
-            <div className="px-8 self-center cursor-pointer text-white bg-[rgb(203,49,49)] rounded-[5%] hover:bg-red-800" onClick={() => deleteGame(game)}>
-              X
-            </div>
-          </div>
+          <GameCard
+            key={game.id}
+            game={game}
+            updateRating={updateRating}
+            updatePlaytime={updatePlaytime}
+            deleteGame={deleteGame}
+            saveChanges={saveChanges}
+          />
         ))}
       </div>
     </div>
