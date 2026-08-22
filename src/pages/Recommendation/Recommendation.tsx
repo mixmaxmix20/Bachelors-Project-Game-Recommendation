@@ -17,9 +17,7 @@ import {
   fetchRecommendationSettings,
   saveRecommendationSettings,
 } from "../../services/gameService";
-import "./Recommendation.css";
-
-interface RecommendationProps {}
+import Button from "../../components/layout/Button";
 
 interface Preferences {
   minTime: number;
@@ -47,10 +45,6 @@ interface Recommendation {
   userPlaytimeRatio: number;
 }
 
-interface UserGameRating {
-  starRating: number;
-}
-
 type UserPreferences = {
   genreWeights: Record<string, number>;
   themeWeights: Record<string, number>;
@@ -58,13 +52,8 @@ type UserPreferences = {
   avgPlaytimeRatio: number;
 };
 
-type RecommendationSettings = {
-  genreWeight: number;
-  ratingWeight: number;
-  criticRatingWeight: number;
-};
 
-function Recommendation(props: RecommendationProps) {
+function Recommendation() {
   const [recGames, setRec] = useState<Recommendation[]>([]);
   const [uid, setUid] = useState<string | null>(null);
   const [maxScore, setMaxScore] = useState<number>(0);
@@ -77,8 +66,6 @@ function Recommendation(props: RecommendationProps) {
     useState<Preferences | null>(null);
   const [userPreferences, setUserPreferences] =
     useState<UserPreferences | null>(null);
-  const [recommendationSettings, setRecommendationSettings] =
-    useState<RecommendationSettings | null>(null);
   const platformCompatibility: { [key: string]: string[] } = {
     "Xbox Series X/S": ["Xbox One"],
     "Xbox One": ["Xbox 360", "Xbox"],
@@ -328,9 +315,6 @@ function Recommendation(props: RecommendationProps) {
           ),
         }))
         .filter((game) => {
-          const matchesTime =
-            game.time >= userProfilePreferences.minTime &&
-            game.time <= userProfilePreferences.maxTime;
           const matchesYear =
             game.releaseDate >= userProfilePreferences.minYear &&
             game.releaseDate <= userProfilePreferences.maxYear;
@@ -356,7 +340,6 @@ function Recommendation(props: RecommendationProps) {
               splitString(game.themes).includes("-")
           );
           return (
-            // matchesTime &&
             matchesYear && matchesPlatform && matchesGenre && matchesTheme
           );
         })
@@ -371,7 +354,7 @@ function Recommendation(props: RecommendationProps) {
 
     if (import.meta.hot) {
       import.meta.hot.accept(() => {
-        console.log("Przeladowanie rekomendacji.");
+        console.log("Przeładowanie rekomendacji.");
         calculateRecommendations();
       });
     }
@@ -400,63 +383,64 @@ function Recommendation(props: RecommendationProps) {
   };
 
   return (
-    <div className="mainContainer">
+    <div className="flex flex-col items-center justify-center min-h-screen w-full p-5 box-border bg-[#121416] text-[#ddddff]">
       <Navbar />
-      <div className="titleContainer">{/* <h2>Rekomendacje</h2> */}</div>
-      <div className="controls">
-        <div className="control-group">
-          <label>
+      <div className="my-4 p-4 bg-[#1f2326] rounded-lg">
+        <div className="my-4">
+          <label className="flex flex-col gap-2 text-lg text-white">
             Balans oceny/preferencje: {(popularityWeight * 100).toFixed(0)}% /{" "}
             {(100 - 100 * popularityWeight).toFixed(0)}%
             <input
               type="range"
-              min="0"
-              max="100"
+              min={0}
+              max={100}
               step={10}
               value={popularityWeight * 100}
               onChange={(e) =>
                 setPopularityWeight(Number(e.target.value) / 100)
               }
+              className="range grow w-150"
             />
           </label>
         </div>
-        <div className="control-group">
-          <label>
+        <div className="my-4">
+          <label className="flex flex-col gap-2 text-lg text-white">
             Balans preferencji: {(genreWeight * 100).toFixed(0)}% gatunek /{" "}
             {(100 - 100 * genreWeight).toFixed(0)}% tematyka
             <input
               type="range"
-              min="0"
-              max="100"
+              min={0}
+              max={100}
               step={10}
               value={genreWeight * 100}
               onChange={(e) => setGenreWeight(Number(e.target.value) / 100)}
+              className="range grow w-150"
             />
           </label>
         </div>
-        <div className="control-group">
-          <label>
+        <div className="my-4">
+          <label className="flex flex-col gap-2 text-lg text-white">
             Balans ocen: {(criticRatingWeight * 100).toFixed(0)}% krytycy /{" "}
             {(100 - criticRatingWeight * 100).toFixed(0)}% gracze
             <input
               type="range"
-              min="0"
-              max="100"
+              min={0}
+              max={100}
               step={10}
               value={criticRatingWeight * 100}
               onChange={(e) =>
                 setCriticRatingWeight(Number(e.target.value) / 100)
               }
+              className="range grow w-150"
             />
           </label>
         </div>
-
-        <div className="time-analysis">
+        <div className="text-center">
           <h4>Analiza czasowa:</h4>
           Stosunek twoich czasów gry do średniej globalnej:{" "}
           {userPreferences?.avgPlaytimeRatio.toFixed(2)}
         </div>
-        <div className="time-analysis">
+        <div className="text-center">
           Twoja typowa długość rozgrywki:{" "}
           {userPreferences?.timePreference === "long"
             ? "Długa"
@@ -466,48 +450,47 @@ function Recommendation(props: RecommendationProps) {
                 ? "Średnia"
                 : "Nieokreślona"}
         </div>
-        <div className="control-group">
-          <button className="saveButton" onClick={handleSaveSettings}>
-            Zapisz
-          </button>
+        <div className="my-4 flex justify-center">
+          <Button isStandalone={true} onClickPar={handleSaveSettings}>Zapisz</Button>
         </div>
       </div>
-      <br />
-      <div className="recommendationList">
+      <div className="flex flex-col gap-5 max-w-4/5 w-full">
         {recGames.map((rec, index) => (
-          <div className="recommendationWrapper" key={rec.id}>
-            <div className="recommendationId">{index + 1}</div>
-            <div className="recommendationPanel">
+          <div className="relative flex items-center" key={rec.id}>
+            <div className="absolute -left-10 text-xl font-bold text-white bg-black py-1.5 px-2.5 text-center w-7.5 h-7.5 flex justify-center items-center">
+              {index + 1}
+            </div>
+            <div className="flex bg-black border border-white rounded-lg overflow-hidden shadow-[0_4px_8px_rgba(255,255,255,0.1)] w-full max-w-full">
               <img
                 src={`https://images.igdb.com/igdb/image/upload/t_cover_big/${rec.cover}.png`}
                 alt={`${rec.name} cover`}
-                className="recommendationCover"
+                className="w-50 h-auto object-cover"
               />
-              <div className="recommendationContent">
-                <h3 className="recommendationTitle">{rec.name}</h3>
-                <div className="recommendationYear">{rec.releaseDate}</div>
-                <div className="recommendationPlatforms">{rec.platforms}</div>
-                <div className="recommendationTime">
+              <div className="flex-1 p-5 flex flex-col justify-between text-white">
+                <h3 className="text-2xl font-bold mb-2.5">{rec.name}</h3>
+                <div className="text-sm text-[#bbb] mb-1.25">{rec.releaseDate}</div>
+                <div className="text-sm text-[#bbb] mb-1.25">{rec.platforms}</div>
+                <div className="text-sm text-[#bbb] mb-1.25">
                   Średni czas gry: {rec.time}h
                 </div>
-                <div className="recommendationTime">
+                <div className="text-sm text-[#bbb] mb-1.25">
                   Oczekiwany czas gry:{" "}
                   {(
                     rec.time * (userPreferences?.avgPlaytimeRatio || 1)
                   ).toFixed(1)}
                   h
                 </div>
-                <div className="recommendationDescription">
+                <div className="text-sm leading-normal">
                   {rec.description}
                 </div>
-                <h4 className="recommendationRating">
+                <h4 className="mt-1.25 text-base text-orange-500">
                   Średnia ocena krytyków: {rec.rating}
                 </h4>
-                <h4 className="recommendationRating">
+                <h4 className="mt-1.25 text-base text-orange-500">
                   Średnia ocena graczy: {rec.globalRating.toFixed(1)}
                 </h4>
-                <h4 className="recommendationRating">
-                  Dopasowaniee: {((rec.score / maxScore) * 100).toFixed(1)}%
+                <h4 className="mt-1.25 text-base text-orange-500">
+                  Dopasowanie: {((rec.score / maxScore) * 100).toFixed(1)}%
                 </h4>
               </div>
             </div>
