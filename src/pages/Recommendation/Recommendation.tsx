@@ -385,73 +385,78 @@ function Recommendation() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-full p-5 box-border bg-[#121416] text-[#ddddff]">
       <Navbar />
-      <div className="my-4 p-4 bg-[#1f2326] rounded-lg">
-        <div className="my-4">
-          <label className="flex flex-col gap-2 text-lg text-white">
-            Balans oceny/preferencje: {(popularityWeight * 100).toFixed(0)}% /{" "}
-            {(100 - 100 * popularityWeight).toFixed(0)}%
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={10}
-              value={popularityWeight * 100}
-              onChange={(e) =>
-                setPopularityWeight(Number(e.target.value) / 100)
-              }
-              className="range grow w-150"
-            />
-          </label>
+      <div tabIndex={0} className="collapse collapse-arrow w-1/4 my-4 bg-[#1f2326] rounded-lg">
+        <div className="collapse-title font-semibold">
+          Ustawienia rekomendacji
         </div>
-        <div className="my-4">
-          <label className="flex flex-col gap-2 text-lg text-white">
-            Balans preferencji: {(genreWeight * 100).toFixed(0)}% gatunek /{" "}
-            {(100 - 100 * genreWeight).toFixed(0)}% tematyka
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={10}
-              value={genreWeight * 100}
-              onChange={(e) => setGenreWeight(Number(e.target.value) / 100)}
-              className="range grow w-150"
-            />
-          </label>
-        </div>
-        <div className="my-4">
-          <label className="flex flex-col gap-2 text-lg text-white">
-            Balans ocen: {(criticRatingWeight * 100).toFixed(0)}% krytycy /{" "}
-            {(100 - criticRatingWeight * 100).toFixed(0)}% gracze
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={10}
-              value={criticRatingWeight * 100}
-              onChange={(e) =>
-                setCriticRatingWeight(Number(e.target.value) / 100)
-              }
-              className="range grow w-150"
-            />
-          </label>
-        </div>
-        <div className="text-center">
-          <h4>Analiza czasowa:</h4>
-          Stosunek twoich czasów gry do średniej globalnej:{" "}
-          {userPreferences?.avgPlaytimeRatio.toFixed(2)}
-        </div>
-        <div className="text-center">
-          Twoja typowa długość rozgrywki:{" "}
-          {userPreferences?.timePreference === "long"
-            ? "Długa"
-            : userPreferences?.timePreference === "short"
-              ? "Krótka"
-              : userPreferences?.timePreference === "medium"
-                ? "Średnia"
-                : "Nieokreślona"}
-        </div>
-        <div className="my-4 flex justify-center">
-          <Button isStandalone={true} onClickPar={handleSaveSettings}>Zapisz</Button>
+        <div className="collapse-content">
+          <div className="my-4">
+            <label className="flex flex-col gap-2 text-lg text-white">
+              Balans oceny/preferencje: {(popularityWeight * 100).toFixed(0)}% /{" "}
+              {(100 - 100 * popularityWeight).toFixed(0)}%
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={10}
+                value={popularityWeight * 100}
+                onChange={(e) =>
+                  setPopularityWeight(Number(e.target.value) / 100)
+                }
+                className="range grow w-full"
+              />
+            </label>
+          </div>
+          <div className="my-4">
+            <label className="flex flex-col gap-2 text-lg text-white">
+              Balans preferencji: {(genreWeight * 100).toFixed(0)}% gatunek /{" "}
+              {(100 - 100 * genreWeight).toFixed(0)}% tematyka
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={10}
+                value={genreWeight * 100}
+                onChange={(e) => setGenreWeight(Number(e.target.value) / 100)}
+                className="range grow w-full"
+              />
+            </label>
+          </div>
+          <div className="my-4">
+            <label className="flex flex-col gap-2 text-lg text-white">
+              Balans ocen: {(criticRatingWeight * 100).toFixed(0)}% krytycy /{" "}
+              {(100 - criticRatingWeight * 100).toFixed(0)}% gracze
+              <input
+                type="range"
+                min={0}
+                max={100}
+                step={10}
+                value={criticRatingWeight * 100}
+                onChange={(e) =>
+                  setCriticRatingWeight(Number(e.target.value) / 100)
+                }
+                className="range grow w-full"
+              />
+            </label>
+          </div>
+          <div className="text-center">
+            <h4>Analiza czasowa:</h4>
+            Stosunek twoich czasów gry do średniej globalnej:{" "}
+            {userPreferences?.avgPlaytimeRatio.toFixed(2)}
+          </div>
+          <div className="text-center">
+            Twoja typowa długość rozgrywki:{" "}
+            {userPreferences?.timePreference === "long"
+              ? "Długa"
+              : userPreferences?.timePreference === "short"
+                ? "Krótka"
+                : userPreferences?.timePreference === "medium"
+                  ? "Średnia"
+                  : "Nieokreślona"}
+          </div>
+          <div className="mt-4 flex justify-center">
+            <Button isStandalone={true} onClickPar={handleSaveSettings}>Zapisz</Button>
+          </div>
         </div>
       </div>
       <div className="flex flex-col gap-5 max-w-4/5 w-full">
