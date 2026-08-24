@@ -386,7 +386,7 @@ function Recommendation() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen w-full p-5 box-border bg-[#121416] text-[#ddddff]">
       <Navbar />
-      <div tabIndex={0} className="collapse collapse-arrow w-1/4 my-4 bg-[#1f2326] rounded-lg">
+      <div tabIndex={0} className="collapse collapse-arrow w-1/3 my-4 bg-[#1f2326] rounded-lg">
         <div className="collapse-title font-semibold">
           Ustawienia rekomendacji
         </div>
@@ -460,7 +460,7 @@ function Recommendation() {
           </div>
         </div>
       </div>
-      <div className="flex flex-col gap-5 max-w-4/5 w-full">
+      <div className="flex flex-col gap-5 max-w-3/5 w-full">
         {recGames.map((rec, index) => (
           <RecommendationCard rec={rec} index={index} maxScore={maxScore} avgPlaytimeRatio={userPreferences?.avgPlaytimeRatio}></RecommendationCard>
         ))}
