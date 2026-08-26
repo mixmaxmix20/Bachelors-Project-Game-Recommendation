@@ -157,7 +157,7 @@ function Collection() {
         )}
       </div>
       {/*Game cards*/}
-      <div className="flex gap-4 flex-wrap justify-center">
+      <div className="flex gap-4 flex-wrap justify-center w-5/6">
         {games.map((game) => (
           <GameCard
             key={game.id}
