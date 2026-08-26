@@ -89,22 +89,6 @@ function Collection() {
     }
   };
 
-  const updateRating = async (gameId: number, starRating: number) => {
-    setGames((prevGames) =>
-      prevGames.map((game) =>
-        game.id === gameId ? { ...game, starRating } : game
-      )
-    );
-  };
-
-  const updatePlaytime = async (gameId: number, hours: number) => {
-    setGames((prevGames) =>
-      prevGames.map((game) =>
-        game.id === gameId ? { ...game, playtime: hours } : game
-      )
-    );
-  };
-
   const saveChanges = async (gameId: number, starRating: number, hours: number) => {
     const previousRating = games.find((g) => g.id === gameId)?.starRating || 0;
 
@@ -162,8 +146,6 @@ function Collection() {
           <GameCard
             key={game.id}
             game={game}
-            updateRating={updateRating}
-            updatePlaytime={updatePlaytime}
             deleteGame={deleteGame}
             saveChanges={saveChanges}
           />
