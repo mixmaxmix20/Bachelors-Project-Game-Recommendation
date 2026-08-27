@@ -51,14 +51,14 @@ function Home() {
         <div className="flex flex-col items-center justify-center text-6xl font-bold -mt-24 mb-12 text-center">
             <h2>SRG</h2>
           </div>
-          <div className="w-1/2 border-4 border-[#1f2326] bg-[#1f2326] mb-10 backdrop-blur-xs pointer-events-auto">
-            <p className="text-2xl">Witaj!</p>
+          <div className="w-11/12 max-w-2xl px-6 py-4 md:w-1/2 border-4 border-[#1f2326] bg-[#1f2326] mb-10 backdrop-blur-xs pointer-events-auto">
+            <p className="text-2xl text-center mb-2">Witaj!</p>
             <p className="text-2xl">
               SRG to narzędzie do rekomendacji gier - dodaj swoje ulubione tytuły i
               odkryj nowe, dopasowane do twoich upodobań.
             </p>
           </div>
-          <div className="flex justify-center gap-24 mt-5 pointer-events-auto">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-24 justify-center mt-5 pointer-events-auto">
             <Button onClickPar={onButtonClickRegister} isStandalone={true}>Stwórz profil</Button>
             <Button onClickPar={onButtonClickLogin} isStandalone={true}>Zaloguj się</Button>
           </div>
