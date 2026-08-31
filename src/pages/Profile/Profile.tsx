@@ -171,56 +171,59 @@ function Profile() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#121416] text-[#ddddff]">
       <Navbar />
         <h2 className="mt-5">Zalogowany jako: {email}</h2>
-      <div className="grid grid-cols-2 gap-28 min-h-140 items-stretch mt-8 w-2/3">
-        <div className="flex flex-col max-w-125 max-h-full justify-between">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 xl:gap-28 px-4 mt-6 lg:min-h-140 items-stretch lg:mt-8 w-full lg:max-w-5xl xl:w-2/3">
+        <div className="flex flex-col w-full max-h-full justify-between">
           <div className="flex flex-col items-start justify-center">
             <label className="text-xl font-bold mb-5">Lata wydania: </label>
             <label className="mb-5">
               Od: <span className="text-xl font-bold">{releaseDateMin}</span>
             </label>
-            <input type="range" min={1990} max={2025} value={releaseDateMin} onChange={(ev) => setReleaseDateMin(ev.target.value)} className="range grow w-125 mb-5" />
+            <input type="range" min={1990} max={2025} value={releaseDateMin} onChange={(ev) => setReleaseDateMin(ev.target.value)} className="range grow w-full lg:max-w-125 mb-5" />
             <label className="mb-5">
               Do: <span className="text-xl font-bold">{releaseDateMax}</span>
             </label>
-            <input type="range" min={1990} max={2025} value={releaseDateMax} onChange={(ev) => setReleaseDateMax(ev.target.value)} className="range grow w-125 mb-5" />
+            <input type="range" min={1990} max={2025} value={releaseDateMax} onChange={(ev) => setReleaseDateMax(ev.target.value)} className="range grow w-full lg:max-w-125 mb-5" />
           </div>
           <div className="flex flex-col items-start justify-center">
             <label className="text-xl font-bold mb-5">Długość gry: </label>
             <label className="mb-5">
               Od: <span className="text-xl font-bold">{lengthMin} godzin</span>
             </label>
-            <input type="range" min={1} max={400} value={lengthMin} onChange={(ev) => setLengthMin(ev.target.value)} className="range grow w-125 mb-5" />
+            <input type="range" min={1} max={400} value={lengthMin} onChange={(ev) => setLengthMin(ev.target.value)} className="range grow w-full lg:max-w-125 mb-5" />
             <label className="mb-5">
               Do: <span className="text-xl font-bold">{lengthMax} godzin</span>
             </label>
-            <input type="range" min={1} max={400} value={lengthMax} onChange={(ev) => setLengthMax(ev.target.value)} className="range grow w-125" />
+            <input type="range" min={1} max={400} value={lengthMax} onChange={(ev) => setLengthMax(ev.target.value)} className="range grow w-full lg:max-w-125" />
           </div>
         </div>
-        <div className="flex flex-col max-w-125 max-h-full justify-between">
+        <div className="flex flex-col w-full max-h-full gap-6">
           <div className="flex flex-col items-start justify-center">
             <label className="text-xl font-bold mb-5">Ulubione gatunki: </label>
-            <div className="flex flex-wrap gap-2 max-w-full mb-5">
-              {genres.map((g, index) => (
-                <div key={index} className="join">
-                  <span className="btn btn-sm join-item bg-[#1f2326] text-white border-neutral-700 pointer-events-none font-normal text-base">
-                    {availableGenres.find((gen) => gen.en === g)?.pl}
-                  </span>
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-square join-item text-red-500 border-neutral-700 hover:bg-red-600 hover:text-white"
-                    onClick={() => handleRemoveGenre(g)}
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
+            <details tabIndex={0} className="collapse collapse-plus max-w-full mb-5">
+              <summary className="collapse-title">Wybrane gatunki</summary>
+              <div className="collapse-content flex flex-wrap gap-2">
+                {genres.map((g, index) => (
+                  <div key={index} className="join">
+                    <span className="btn btn-sm join-item bg-[#1f2326] text-white border-neutral-700 pointer-events-none font-normal text-base">
+                      {availableGenres.find((gen) => gen.en === g)?.pl}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-square join-item text-red-500 border-neutral-700 hover:bg-red-600 hover:text-white"
+                      onClick={() => handleRemoveGenre(g)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </details>
             <select
               value=""
               onChange={(ev) => {
                 handleAddGenre(ev.target.value);
               }}
-              className="select h-12 w-125 grow text-lg rounded-lg border border-gray-500 pl-2 self-center bg-[#1f2326] text-white mb-5"
+              className="select h-12 w-full lg:max-w-125 grow text-lg rounded-lg border border-gray-500 pl-2 self-center bg-[#1f2326] text-white mb-5"
             >
               <option disabled={true} value="">Wybierz gatunek</option>
               {availableGenres.filter((option) => !genres.includes(option.en)).map((g, index) => (
@@ -231,29 +234,32 @@ function Profile() {
             </select>
           </div>
           <div className="flex flex-col items-start justify-center">
-            <label className="text-xl font-bold mb-5">Ulubione tematyki: </label>
-            <div className="flex flex-wrap gap-2 max-w-full mb-5">
-              {themes.map((g, index) => (
-                <div key={index} className="join">
-                  <span className="btn btn-sm join-item bg-[#1f2326] text-white border-neutral-700 pointer-events-none font-normal">
-                    {availableThemes.find((gen) => gen.en === g)?.pl}
-                  </span>
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-square join-item text-red-500 border-neutral-700 hover:bg-red-600 hover:text-white"
-                    onClick={() => handleRemoveTheme(g)}
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
+            <label className="text-xl font-bold mb-5">Ulubione motywy: </label>
+            <details tabIndex={0} className="collapse collapse-plus max-w-full mb-5">
+              <summary className="collapse-title">Wybrane motywy</summary>
+              <div className="collapse-content flex flex-wrap gap-2">
+                {themes.map((g, index) => (
+                  <div key={index} className="join">
+                    <span className="btn btn-sm join-item bg-[#1f2326] text-white border-neutral-700 pointer-events-none font-normal text-base">
+                      {availableThemes.find((gen) => gen.en === g)?.pl}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-square join-item text-red-500 border-neutral-700 hover:bg-red-600 hover:text-white"
+                      onClick={() => handleRemoveTheme(g)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </details>
             <select
               value=""
               onChange={(ev) => {
                 handleAddTheme(ev.target.value);
               }}
-              className="select h-12 w-125 grow text-lg rounded-lg border border-gray-500 pl-2 self-center bg-[#1f2326] text-white mb-5"
+              className="select h-12 w-full lg:max-w-125 grow text-lg rounded-lg border border-gray-500 pl-2 self-center bg-[#1f2326] text-white mb-5"
             >
               <option disabled={true} value="">Wybierz motyw</option>
               {availableThemes.filter((option) => !themes.includes(option.en)).map((g, index) => (
@@ -265,28 +271,31 @@ function Profile() {
           </div>
           <div className="flex flex-col items-start justify-center">
             <label className="text-xl font-bold mb-5">Platformy: </label>
-            <div className="flex flex-wrap gap-2 max-w-full mb-5">
-              {platforms.map((g, index) => (
-                <div key={index} className="join">
-                  <span className="btn btn-sm join-item bg-[#1f2326] text-white border-neutral-700 pointer-events-none font-normal">
-                    {availablePlatforms.find((gen) => gen === g)}
-                  </span>
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-square join-item text-red-500 border-neutral-700 hover:bg-red-600 hover:text-white"
-                    onClick={() => handleRemovePlatform(g)}
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
+            <details tabIndex={0} className="collapse collapse-plus max-w-full mb-5">
+              <summary className="collapse-title">Wybrane platformy</summary>
+              <div className="collapse-content flex flex-wrap gap-2">
+                {platforms.map((g, index) => (
+                  <div key={index} className="join">
+                    <span className="btn btn-sm join-item bg-[#1f2326] text-white border-neutral-700 pointer-events-none font-normal text-base">
+                      {availablePlatforms.find((gen) => gen === g)}
+                    </span>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-square join-item text-red-500 border-neutral-700 hover:bg-red-600 hover:text-white"
+                      onClick={() => handleRemovePlatform(g)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </details>
             <select
               value=""
               onChange={(ev) => {
                 handleAddPlatform(ev.target.value);
               }}
-              className="select h-12 w-125 grow text-lg rounded-lg border border-gray-500 pl-2 self-center bg-[#1f2326] text-white"
+              className="select h-12 w-full lg:max-w-125 grow text-lg rounded-lg border border-gray-500 pl-2 self-center bg-[#1f2326] text-white"
             >
               <option disabled={true} value="">Wybierz platformę</option>
               {availablePlatforms.filter((option) => !platforms.includes(option)).map((g, index) => (
@@ -298,7 +307,7 @@ function Profile() {
           </div>
         </div>
       </div>
-      <div className="mt-10 mb-6">
+      <div className="mt-4 mb-24 pointer-fine:mb-6">
         <Button onClickPar={saveChanges} isStandalone={true}>Zapisz zmiany</Button>
       </div>
     </div>
