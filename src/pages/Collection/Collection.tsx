@@ -108,20 +108,20 @@ function Collection() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#121416] text-[#ddddff] pb-5">
+    <div className="flex flex-col items-center justify-start pt-2 sm:pt-5 min-h-screen bg-[#121416] text-[#ddddff] pb-24 pointer-fine:pb-8 pointer-fine:pl-16">
       <Navbar />
       <div className="flex flex-col items-center justify-center text-6xl font-bold"></div>
       {/*Search bar*/}
-      <div className="relative mb-4 mt-5">
+      <div className="relative mb-4 mt-5 w-full max-w-xl px-4">
         <input
           type="text"
           placeholder="Wyszukaj grę"
           value={searchQuery}
           onChange={(e) => handleSearch(e.target.value)}
-          className="text-2xl w-150 h-10 p-2 border border-[#ddd] rounded bg-transparent"
+          className="text-lg sm:text-2xl w-full h-12 p-2 border border-[#ddd] rounded bg-transparent"
         />
         {searchQuery.trim() && (
-          <div className="absolute top-10 left-0 right-0 bg-black border border-[#ddd] rounded max-h-54 overflow-y-auto z-10">
+          <div className="absolute top-full mt-1.5 left-4 right-4 bg-black border border-[#ddd] rounded max-h-54 overflow-y-auto z-10">
             {searchResults.map((game) => (
               <div
                 key={game.id}
@@ -141,7 +141,7 @@ function Collection() {
         )}
       </div>
       {/*Game cards*/}
-      <div className="flex gap-4 flex-wrap justify-center w-5/6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 w-full max-w-7xl px-4">
         {games.map((game) => (
           <GameCard
             key={game.id}
@@ -150,6 +150,11 @@ function Collection() {
             saveChanges={saveChanges}
           />
         ))}
+        {games.length === 0 && (
+            <p className="text-gray-400 mt-12 text-center text-lg">
+              Twoja kolekcja jest pusta! Wyszukaj i dodaj gry powyżej.
+            </p>
+        )}
       </div>
     </div>
   );
