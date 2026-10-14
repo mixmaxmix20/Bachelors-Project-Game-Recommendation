@@ -2,7 +2,7 @@
 
 Aplikacja webowa stworzona w ramach pracy licencjackiej, która personalizuje propozycje gier wideo na podstawie preferencji użytkownika oraz jego historii grania.
 
-## 🚀 O projekcie
+## O projekcie
 
 Aplikacja analizuje dane wprowadzone przez użytkownika i sugeruje 10 tytułów najlepiej dopasowanych do jego gustu. Mechanizm rekomendacji działa lokalnie po stronie klienta.
 
@@ -12,7 +12,7 @@ Aplikacja analizuje dane wprowadzone przez użytkownika i sugeruje 10 tytułów 
 * **Baza danych gier:** Integracja z danymi pochodzącymi z serwisu **IGDB**.
 * **Autoryzacja:** Bezpieczne logowanie i rejestracja użytkowników.
 
-## 🛠️ Technologie
+## Technologie
 
 * **Frontend:** React + TypeScript + Vite
 * **Baza danych:** Firebase Firestore
