@@ -4,10 +4,11 @@ interface ButtonProps {
     onClickPar?: () => void,
     isStandalone?: boolean,
     children?: React.ReactNode,
-    isLogout?: boolean
+    isLogout?: boolean,
+    disabled?: boolean
 }
 
-function Button({ onClickPar, isStandalone, children, isLogout }: ButtonProps) {
+function Button({ onClickPar, isStandalone, children, isLogout, disabled }: ButtonProps) {
     let opacity, spanHidden;
     if (isStandalone) {
         opacity = "";
@@ -21,7 +22,8 @@ function Button({ onClickPar, isStandalone, children, isLogout }: ButtonProps) {
     return (
         <button
             onClick={onClickPar}
-            className={`${baseClasses} ${colorClasses} ${opacity}`}
+            disabled={disabled}
+            className={`${baseClasses} ${colorClasses} ${opacity} disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100`}
         >
             <span className={`whitespace-nowrap ${spanHidden}`}>{children}</span>
         </button>

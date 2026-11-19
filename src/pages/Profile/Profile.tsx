@@ -1,8 +1,8 @@
 import { availablePlatforms } from "../../domain/platforms";
+import { gameLengthBounds, releaseYearBounds, type PreferenceRange } from "../../domain/profileRanges";
 import { useState, useEffect } from "react";
 import Navbar from "../../components/layout/Navbar";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../../services/firebase";
+import { useAuth } from "../../contexts/AuthContext";
 import {
   fetchUserProfilePreferences,
   saveUserProfilePreferences,
@@ -10,15 +10,22 @@ import {
 import Button from "../../components/layout/Button";
 
 function Profile() {
-  const [releaseDateMin, setReleaseDateMin] = useState("");
-  const [releaseDateMax, setReleaseDateMax] = useState("");
+  const { user } = useAuth();
+  const uid: string | undefined = user?.uid;
+  const [releaseYears, setReleaseYears] = useState<PreferenceRange>([
+    releaseYearBounds.min, releaseYearBounds.max,
+  ]);
+  const [gameLength, setGameLength] = useState<PreferenceRange>([
+    gameLengthBounds.min, gameLengthBounds.max,
+  ]);
+  const [releaseDateMin, releaseDateMax] = releaseYears;
+  const [lengthMin, lengthMax] = gameLength;
   const [genres, setGenres] = useState<string[]>([]);
   const [themes, setThemes] = useState<string[]>([]);
   const [platforms, setPlatforms] = useState<string[]>([]);
-  const [lengthMin, setLengthMin] = useState("");
-  const [lengthMax, setLengthMax] = useState("");
-  const [uid, setUid] = useState<string | null>(null);
-  const [email, setEmail] = useState<string | null>(null);
+  const [loadedUid, setLoadedUid] = useState<string | null>(null);
+  const [loadFailedUid, setLoadFailedUid] = useState<string | null>(null);
+  const canSave = Boolean(uid && loadedUid === uid);
   const availableGenres = [
     { pl: "Przygodowa", en: "Adventure" },
     { pl: "Zręcznościowa", en: "Arcade" },
@@ -103,39 +110,43 @@ function Profile() {
   }
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user == null) {
-        return;
-      }
-      const { uid } = user;
-      setUid(uid);
-      setEmail(user.email);
-      const data = await fetchUserProfilePreferences(uid);
-      setReleaseDateMin(data.minYear.toString());
-      setReleaseDateMax(data.maxYear.toString());
+    if (!uid) return;
+
+    let active = true;
+    setLoadedUid(null);
+    setLoadFailedUid(null);
+    fetchUserProfilePreferences(uid).then((data) => {
+      if (!active) return;
+
+      setReleaseYears([data.minYear, data.maxYear]);
+      setGameLength([data.minTime, data.maxTime]);
       setGenres(data.genres);
       setThemes(data.themes);
       setPlatforms(data.platforms);
-      setLengthMin(data.minTime.toString());
-      setLengthMax(data.maxTime.toString());
+      setLoadedUid(uid);
+    }).catch((error) => {
+      if (!active) return;
+
+      console.error("Nie udało się wczytać preferencji", error);
+      setLoadFailedUid(uid);
     });
 
     return () => {
-      unsubscribe();
+      active = false;
     };
-  }, []);
+  }, [uid]);
 
   async function saveChanges() {
-    if (!uid) return;
+    if (!uid || !canSave) return;
 
     const data = {
-      yearStart: parseInt(releaseDateMin),
-      yearEnd: parseInt(releaseDateMax),
+      yearStart: releaseDateMin,
+      yearEnd: releaseDateMax,
       genres: genres,
       themes: themes,
       platforms: platforms,
-      timeStart: parseInt(lengthMin),
-      timeEnd: parseInt(lengthMax),
+      timeStart: lengthMin,
+      timeEnd: lengthMax,
     };
     try {
       await saveUserProfilePreferences(uid, data);
@@ -148,32 +159,53 @@ function Profile() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#121416] text-[#ddddff]">
       <Navbar />
-        <h2 className="mt-5">Zalogowany jako: {email}</h2>
+      <h2 className="mt-5">Zalogowany jako: {user?.email}</h2>
+      {loadFailedUid === uid && <p role="alert">Nie udało się wczytać preferencji. Odśwież stronę, aby spróbować ponownie.</p>}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 xl:gap-28 px-4 mt-6 lg:min-h-140 items-stretch lg:mt-8 w-full lg:max-w-5xl xl:w-2/3">
-        <div className="flex flex-col w-full max-h-full justify-between">
+        <fieldset disabled={!canSave} className="flex flex-col w-full min-w-0 max-h-full justify-between">
           <div className="flex flex-col items-start justify-center">
-            <label className="text-xl font-bold mb-5">Lata wydania: </label>
-            <label className="mb-5">
-              Od: <span className="text-xl font-bold">{releaseDateMin}</span>
+            <h3 className="text-xl font-bold mb-5">Lata wydania</h3>
+            <label htmlFor="release-year-min" className="mb-5">
+              <span className="sr-only">Rok wydania </span>Od: <span className="text-xl font-bold">{releaseDateMin}</span>
             </label>
-            <input type="range" min={1990} max={2025} value={releaseDateMin} onChange={(ev) => setReleaseDateMin(ev.target.value)} className="range grow w-full lg:max-w-125 mb-5" />
-            <label className="mb-5">
-              Do: <span className="text-xl font-bold">{releaseDateMax}</span>
+            <input
+              id="release-year-min" type="range" min={releaseYearBounds.min} max={releaseYearBounds.max} step={1}
+              value={releaseDateMin}
+              onChange={(ev) => setReleaseYears([Math.min(ev.target.valueAsNumber, releaseDateMax), releaseDateMax])}
+              className="range grow w-full lg:max-w-125 mb-5"
+            />
+            <label htmlFor="release-year-max" className="mb-5">
+              <span className="sr-only">Rok wydania </span>Do: <span className="text-xl font-bold">{releaseDateMax}</span>
             </label>
-            <input type="range" min={1990} max={2025} value={releaseDateMax} onChange={(ev) => setReleaseDateMax(ev.target.value)} className="range grow w-full lg:max-w-125 mb-5" />
+            <input
+              id="release-year-max" type="range" min={releaseYearBounds.min} max={releaseYearBounds.max} step={1}
+              value={releaseDateMax}
+              onChange={(ev) => setReleaseYears([releaseDateMin, Math.max(ev.target.valueAsNumber, releaseDateMin)])}
+              className="range grow w-full lg:max-w-125 mb-5"
+            />
           </div>
           <div className="flex flex-col items-start justify-center">
-            <label className="text-xl font-bold mb-5">Długość gry: </label>
-            <label className="mb-5">
-              Od: <span className="text-xl font-bold">{lengthMin} godzin</span>
+            <h3 className="text-xl font-bold mb-5">Długość gry</h3>
+            <label htmlFor="game-length-min" className="mb-5">
+              <span className="sr-only">Długość gry </span>Od: <span className="text-xl font-bold">{lengthMin} godz.</span>
             </label>
-            <input type="range" min={1} max={400} value={lengthMin} onChange={(ev) => setLengthMin(ev.target.value)} className="range grow w-full lg:max-w-125 mb-5" />
-            <label className="mb-5">
-              Do: <span className="text-xl font-bold">{lengthMax} godzin</span>
+            <input
+              id="game-length-min" type="range" min={gameLengthBounds.min} max={gameLengthBounds.max} step={1}
+              value={lengthMin}
+              onChange={(ev) => setGameLength([Math.min(ev.target.valueAsNumber, lengthMax), lengthMax])}
+              className="range grow w-full lg:max-w-125 mb-5"
+            />
+            <label htmlFor="game-length-max" className="mb-5">
+              <span className="sr-only">Długość gry </span>Do: <span className="text-xl font-bold">{lengthMax} godz.</span>
             </label>
-            <input type="range" min={1} max={400} value={lengthMax} onChange={(ev) => setLengthMax(ev.target.value)} className="range grow w-full lg:max-w-125" />
+            <input
+              id="game-length-max" type="range" min={gameLengthBounds.min} max={gameLengthBounds.max} step={1}
+              value={lengthMax}
+              onChange={(ev) => setGameLength([lengthMin, Math.max(ev.target.valueAsNumber, lengthMin)])}
+              className="range grow w-full lg:max-w-125"
+            />
           </div>
-        </div>
+        </fieldset>
         <div className="flex flex-col w-full max-h-full gap-6">
           <div className="flex flex-col items-start justify-center">
             <label className="text-xl font-bold mb-5">Ulubione gatunki: </label>
@@ -286,7 +318,7 @@ function Profile() {
         </div>
       </div>
       <div className="mt-4 mb-24 pointer-fine:mb-6">
-        <Button onClickPar={saveChanges} isStandalone={true}>Zapisz zmiany</Button>
+        <Button onClickPar={saveChanges} isStandalone={true} disabled={!canSave}>Zapisz zmiany</Button>
       </div>
     </div>
   );

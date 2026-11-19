@@ -30,7 +30,7 @@ function Register() {
       return;
     }
 
-    if (password.length < 7) {
+    if (password.length < 8) {
       setPasswordError("Hasło musi mieć przynajmniej 8 znaków");
       return;
     }
@@ -62,6 +62,7 @@ function Register() {
           onChange={(ev) => setEmail(ev.target.value)}
           className="h-12 w-full max-w-sm md:w-96 text-lg rounded-lg border border-gray-500 pl-2 self-center"
           autoComplete="off"
+          type="email"
         />
         <label className="text-red-500 text-xs">{emailError}</label>
       </div>

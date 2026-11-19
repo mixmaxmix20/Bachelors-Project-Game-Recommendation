@@ -10,6 +10,7 @@ import {
 import { db } from "./firebase";
 import type { Game } from "../types/game";
 import { normalizePlatforms } from "../domain/platforms";
+import { gameLengthBounds, normalizePreferenceRange, releaseYearBounds } from "../domain/profileRanges";
 
 export interface NewGameData {
   name: string;
@@ -172,18 +173,23 @@ export const updateUserGamePlaytime = async (
   return setDoc(gameDoc, { playtime: hours }, { merge: true });
 };
 
+const profilePreferencesDocument = "preferences";
+
 export const fetchUserProfilePreferences = async (
   uid: string
 ): Promise<UserPreferences> => {
   const profileRef = collection(db, `users/${uid}/profileInfo`);
   const snapshot = await getDocs(profileRef);
-  const data = snapshot.docs[0]?.data() || {};
+  const savedPreferences = snapshot.docs.find((entry) => entry.id === profilePreferencesDocument);
+  const data = (savedPreferences ?? snapshot.docs[0])?.data() ?? {};
+  const [minYear, maxYear] = normalizePreferenceRange(data.yearStart, data.yearEnd, releaseYearBounds);
+  const [minTime, maxTime] = normalizePreferenceRange(data.timeStart, data.timeEnd, gameLengthBounds);
 
   return {
-    minTime: data.timeStart || 0,
-    maxTime: data.timeEnd || 1000,
-    minYear: data.yearStart || 1970,
-    maxYear: data.yearEnd || new Date().getFullYear(),
+    minTime,
+    maxTime,
+    minYear,
+    maxYear,
     platforms: normalizePlatforms(data.platforms ?? []),
     genres: data.genres || [],
     themes: data.themes || [],
@@ -202,8 +208,17 @@ export const saveUserProfilePreferences = async (
     timeEnd: number;
   }
 ) => {
-  const profileInfo = doc(db, `users/${uid}/profileInfo`, "preferences");
-  return setDoc(profileInfo, { ...data, platforms: normalizePlatforms(data.platforms) }, { merge: true });
+  const profileInfo = doc(db, `users/${uid}/profileInfo`, profilePreferencesDocument);
+  const [yearStart, yearEnd] = normalizePreferenceRange(data.yearStart, data.yearEnd, releaseYearBounds);
+  const [timeStart, timeEnd] = normalizePreferenceRange(data.timeStart, data.timeEnd, gameLengthBounds);
+  return setDoc(profileInfo, {
+    ...data,
+    yearStart,
+    yearEnd,
+    timeStart,
+    timeEnd,
+    platforms: normalizePlatforms(data.platforms),
+  }, { merge: true });
 };
 
 export const fetchRecommendationSettings = async (
