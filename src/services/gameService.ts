@@ -9,6 +9,7 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Game } from "../types/game";
+import { normalizePlatforms } from "../domain/platforms";
 
 export interface NewGameData {
   name: string;
@@ -183,7 +184,7 @@ export const fetchUserProfilePreferences = async (
     maxTime: data.timeEnd || 1000,
     minYear: data.yearStart || 1970,
     maxYear: data.yearEnd || new Date().getFullYear(),
-    platforms: data.platforms || [],
+    platforms: normalizePlatforms(data.platforms ?? []),
     genres: data.genres || [],
     themes: data.themes || [],
   };
@@ -202,7 +203,7 @@ export const saveUserProfilePreferences = async (
   }
 ) => {
   const profileInfo = doc(db, `users/${uid}/profileInfo`, "preferences");
-  return setDoc(profileInfo, data, { merge: true });
+  return setDoc(profileInfo, { ...data, platforms: normalizePlatforms(data.platforms) }, { merge: true });
 };
 
 export const fetchRecommendationSettings = async (

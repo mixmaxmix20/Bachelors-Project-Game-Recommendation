@@ -1,3 +1,4 @@
+import { availablePlatforms } from "../../domain/platforms";
 import { useState, useEffect } from "react";
 import Navbar from "../../components/layout/Navbar";
 import { onAuthStateChanged } from "firebase/auth";
@@ -67,29 +68,6 @@ function Profile() {
     { pl: "4X", en: "4X" },
     { pl: "Tajemnicza", en: "Mystery" },
     { pl: "Romans", en: "Romance" },
-  ];
-  const availablePlatforms = [
-    "PC",
-    "PlayStation 5",
-    "PlayStation 4",
-    "PlayStation 3",
-    "PlayStation 2",
-    "PlayStation 1",
-    "PlayStation Vita",
-    "PlayStation Portable",
-    "Xbox Series X|S",
-    "Xbox One",
-    "Xbox 360",
-    "Xbox",
-    "Nintendo Switch",
-    "Wii U",
-    "Wii",
-    "Nintendo 3DS",
-    "Nintendo DS",
-    "Nintendo 64",
-    "Nintendo GameCube",
-    "Game Boy Advance",
-    "Dreamcast",
   ];
 
   function handleAddGenre(selectedPlGenre: string) {
@@ -277,7 +255,7 @@ function Profile() {
                 {platforms.map((g, index) => (
                   <div key={index} className="join">
                     <span className="btn btn-sm join-item bg-[#1f2326] text-white border-neutral-700 pointer-events-none font-normal text-base">
-                      {availablePlatforms.find((gen) => gen === g)}
+                      {g}
                     </span>
                     <button
                       type="button"

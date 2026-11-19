@@ -1,3 +1,4 @@
+import { matchesGamePlatforms, supportedPlatforms } from "../../domain/platforms";
 import Navbar from "../../components/layout/Navbar";
 import RecommendationCard from "../../components/layout/RecommendationCard";
 import { useState, useEffect, useCallback } from "react";
@@ -67,19 +68,6 @@ function Recommendation() {
     useState<Preferences | null>(null);
   const [userPreferences, setUserPreferences] =
     useState<UserPreferences | null>(null);
-  const platformCompatibility: { [key: string]: string[] } = {
-    "Xbox Series X/S": ["Xbox One"],
-    "Xbox One": ["Xbox 360", "Xbox"],
-    "Xbox 360": ["Xbox"],
-    "PlayStation 5": ["PlayStation 4"],
-    "PlayStation 2": ["PlayStation 1"],
-    "PlayStation Vita": ["PlayStation 1", "PlayStation Portable"],
-    "PlayStation Portable": ["PlayStation 1"],
-    "Wii U": ["Wii"],
-    Wii: ["GameCube"],
-    "Nintendo 3DS": ["Nintendo DS"],
-    "Nintendo DS": ["Game Boy Advance"],
-  };
 
   const splitString = (str?: string): string[] => {
     if (!str) return [];
@@ -304,6 +292,7 @@ function Recommendation() {
     if (!userPreferences || !userProfilePreferences) return;
 
     const calculateRecommendations = () => {
+      const supported = supportedPlatforms(userProfilePreferences.platforms);
       const recommendations = allGames
         .filter((game) => !ratedGames.some((g) => g.id === game.id.toString()))
         .map((game) => ({
@@ -319,19 +308,7 @@ function Recommendation() {
           const matchesYear =
             game.releaseDate >= userProfilePreferences.minYear &&
             game.releaseDate <= userProfilePreferences.maxYear;
-          const matchesPlatform = userProfilePreferences.platforms.some(
-            (userPlatform) => {
-              const compatiblePlatforms =
-                platformCompatibility[userPlatform] || [];
-              const allPlatformsToCheck = [
-                userPlatform,
-                ...compatiblePlatforms,
-              ];
-              return splitString(game.platforms).some((gamePlatform) =>
-                allPlatformsToCheck.includes(gamePlatform)
-              );
-            }
-          );
+          const matchesPlatform = matchesGamePlatforms(supported, game.platforms);
           const matchesGenre = userProfilePreferences.genres.some((g) =>
             splitString(game.genres).includes(g)
           );
