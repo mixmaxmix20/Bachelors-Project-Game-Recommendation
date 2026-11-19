@@ -14,16 +14,16 @@ function Button({ onClickPar, isStandalone, children, isLogout, disabled }: Butt
         opacity = "";
         spanHidden = "";
     } else {
-        opacity = "opacity-0 group-hover:opacity-100 w-[88%] pointer-events-none group-hover:pointer-events-auto";
+        opacity = "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 w-[88%] pointer-events-none group-hover:pointer-events-auto";
         spanHidden = "inline-block"
     }
-    const baseClasses = "flex items-center border-2 border-[#353b40] text-white bg-[#1f2326] py-2.5 md:py-3 px-5 md:px-6 m-2 text-xl md:text-2xl rounded-lg cursor-pointer overflow-hidden transition-all duration-300 hover:scale-105 hover:border-gray-400"
+    const baseClasses = "flex items-center border-2 border-ui-border ui-focus text-white bg-[#1f2326] py-2.5 md:py-3 px-5 md:px-6 m-2 text-xl md:text-2xl rounded-lg cursor-pointer overflow-hidden motion-safe:transition-all motion-safe:duration-300 motion-safe:enabled:hover:scale-105 hover:border-gray-400"
     const colorClasses = isLogout ? "bg-[#1f2326] hover:bg-red-600" : "bg-[#1f2326] hover:bg-[#2b2d39]"
     return (
         <button
             onClick={onClickPar}
             disabled={disabled}
-            className={`${baseClasses} ${colorClasses} ${opacity} disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100`}
+            className={`${baseClasses} ${colorClasses} ${opacity} disabled:cursor-not-allowed disabled:opacity-50`}
         >
             <span className={`whitespace-nowrap ${spanHidden}`}>{children}</span>
         </button>

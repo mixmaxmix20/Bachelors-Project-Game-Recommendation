@@ -52,7 +52,7 @@ function Login() {
           value={email}
           placeholder="Wpisz swój email"
           onChange={(ev) => setEmail(ev.target.value)}
-          className="h-12 w-full max-w-sm md:w-96 text-lg rounded-lg border border-gray-500 pl-2 self-center"
+          className="h-12 w-full max-w-sm md:w-96 text-lg rounded-lg border border-ui-border ui-focus pl-2 self-center"
         />
         <label className="text-red-500 text-xs">{emailError}</label>
       </div>
@@ -64,7 +64,7 @@ function Login() {
           type="password"
           placeholder="Wpisz swoje hasło"
           onChange={(ev) => setPassword(ev.target.value)}
-          className="h-12 w-full max-w-sm md:w-96 text-lg rounded-lg border border-gray-500 pl-2 self-center"
+          className="h-12 w-full max-w-sm md:w-96 text-lg rounded-lg border border-ui-border ui-focus pl-2 self-center"
         />
         <label className="text-red-500 text-xs">{passwordError}</label>
       </div>

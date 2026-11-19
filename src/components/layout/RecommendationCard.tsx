@@ -37,12 +37,12 @@ function RecommendationCard({rec, index, maxScore, avgPlaytimeRatio }: Recommend
                     </div>
                 </div>
                 <div className="collapse-content flex-1 flex flex-col justify-between text-white min-[75rem]:pr-52">
-                    <div className="text-sm text-[#bbb] mb-1.25">{rec.releaseDate}</div>
-                    <div className="text-sm text-[#bbb] mb-1.25">{rec.platforms}</div>
-                    <div className="text-sm text-[#bbb] mb-1.25">
+                    <div className="text-sm text-ui-muted mb-1.25">{rec.releaseDate}</div>
+                    <div className="text-sm text-ui-muted mb-1.25">{rec.platforms}</div>
+                    <div className="text-sm text-ui-muted mb-1.25">
                         Średni czas gry: {Number.isFinite(rec.time) ? formatHours(rec.time) : "Brak danych"}
                     </div>
-                    <div className="text-sm text-[#bbb] mb-1.25">
+                    <div className="text-sm text-ui-muted mb-1.25">
                         Oczekiwany czas gry:{" "}
                         {Number.isFinite(expectedPlaytime) ? formatHours(expectedPlaytime) : "Brak danych"}
                     </div>

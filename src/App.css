@@ -1,2 +1,14 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+@theme {
+  --color-ui-muted: #b4bac5;
+  --color-ui-border: #747d8a;
+}
+
+@utility ui-focus {
+  &:focus-visible {
+    outline: 2px solid var(--color-ui-muted);
+    outline-offset: 2px;
+  }
+}

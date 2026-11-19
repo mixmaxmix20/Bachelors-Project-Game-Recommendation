@@ -118,10 +118,10 @@ function Collection() {
           placeholder="Wyszukaj grę"
           value={searchQuery}
           onChange={(e) => handleSearch(e.target.value)}
-          className="text-lg sm:text-2xl w-full h-12 p-2 border border-[#ddd] rounded bg-transparent"
+          className="text-lg sm:text-2xl w-full h-12 p-2 border border-ui-border ui-focus rounded bg-transparent"
         />
         {searchQuery.trim() && (
-          <div className="absolute top-full mt-1.5 left-4 right-4 bg-black border border-[#ddd] rounded max-h-54 overflow-y-auto z-10">
+          <div className="absolute top-full mt-1.5 left-4 right-4 bg-black border border-ui-border rounded max-h-54 overflow-y-auto z-10">
             {searchResults.map((game) => (
               <div
                 key={game.id}
@@ -151,7 +151,7 @@ function Collection() {
           />
         ))}
         {games.length === 0 && (
-            <p className="text-gray-400 mt-12 text-center text-lg">
+            <p className="text-ui-muted mt-12 text-center text-lg">
               Twoja kolekcja jest pusta! Wyszukaj i dodaj gry powyżej.
             </p>
         )}

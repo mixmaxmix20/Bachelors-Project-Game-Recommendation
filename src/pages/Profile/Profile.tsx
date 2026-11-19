@@ -234,7 +234,7 @@ function Profile() {
               onChange={(ev) => {
                 handleAddGenre(ev.target.value);
               }}
-              className="select h-12 w-full lg:max-w-125 grow text-lg rounded-lg border border-gray-500 pl-2 self-center bg-[#1f2326] text-white mb-5"
+              className="select h-12 w-full lg:max-w-125 grow text-lg rounded-lg border border-ui-border ui-focus pl-2 self-center bg-[#1f2326] text-white mb-5"
             >
               <option disabled={true} value="">Wybierz gatunek</option>
               {availableGenres.filter((option) => !genres.includes(option.en)).map((g, index) => (
@@ -270,7 +270,7 @@ function Profile() {
               onChange={(ev) => {
                 handleAddTheme(ev.target.value);
               }}
-              className="select h-12 w-full lg:max-w-125 grow text-lg rounded-lg border border-gray-500 pl-2 self-center bg-[#1f2326] text-white mb-5"
+              className="select h-12 w-full lg:max-w-125 grow text-lg rounded-lg border border-ui-border ui-focus pl-2 self-center bg-[#1f2326] text-white mb-5"
             >
               <option disabled={true} value="">Wybierz motyw</option>
               {availableThemes.filter((option) => !themes.includes(option.en)).map((g, index) => (
@@ -306,7 +306,7 @@ function Profile() {
               onChange={(ev) => {
                 handleAddPlatform(ev.target.value);
               }}
-              className="select h-12 w-full lg:max-w-125 grow text-lg rounded-lg border border-gray-500 pl-2 self-center bg-[#1f2326] text-white"
+              className="select h-12 w-full lg:max-w-125 grow text-lg rounded-lg border border-ui-border ui-focus pl-2 self-center bg-[#1f2326] text-white"
             >
               <option disabled={true} value="">Wybierz platformę</option>
               {availablePlatforms.filter((option) => !platforms.includes(option)).map((g, index) => (

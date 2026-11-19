@@ -25,7 +25,7 @@ function GameCard({ game, deleteGame, saveChanges }: GameCardProps) {
     }
 
     return (
-        <div className="card text-center border border-[#ddd] p-2 rounded-lg">
+        <div className="card text-center border border-ui-border p-2 rounded-lg">
             <figure>
                 <img
                     className="w-full aspect-3/4 object-cover rounded-md"
@@ -59,9 +59,9 @@ function GameCard({ game, deleteGame, saveChanges }: GameCardProps) {
                                 setTempPlaytime(Number(e.target.value))
                             }
                             placeholder="Czas gry"
-                            className="w-14 h-6 text-center border border-[#ddd] rounded bg-transparent text-xs sm:text-sm"
+                            className="w-14 h-6 text-center border border-ui-border ui-focus rounded bg-transparent text-xs sm:text-sm"
                             />
-                            <span aria-hidden="true" className="text-xs sm:text-sm text-[#666]">{hoursUnit}</span>
+                            <span aria-hidden="true" className="text-xs sm:text-sm text-ui-muted">{hoursUnit}</span>
                         </label>
                     </div>
 
@@ -95,7 +95,7 @@ function GameCard({ game, deleteGame, saveChanges }: GameCardProps) {
                             ))}
                         </div>
 
-                        <div className="text-xs sm:text-sm text-gray-400 font-medium">
+                        <div className="text-xs sm:text-sm text-ui-muted font-medium">
                             {game.playtime ? formatHours(game.playtime) : "Brak czasu"}
                         </div>
                     </div>
