@@ -1,4 +1,5 @@
 import type { Game } from "../../types/game";
+import { formatHours, hoursUnit } from "../common/formatNumbers";
 import { useState } from "react";
 
 interface GameCardProps {
@@ -29,7 +30,7 @@ function GameCard({ game, deleteGame, saveChanges }: GameCardProps) {
                 <img
                     className="w-full aspect-3/4 object-cover rounded-md"
                     src={`https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover}.png`}
-                    alt={`${game.name} cover image`}
+                    alt={`Okładka gry ${game.name}`}
                 />
             </figure>
             <h3 className="h-10 sm:h-12 flex items-center justify-center line-clamp-2 text-sm sm:text-base font-semibold text-center px-1 my-1">{game.name}</h3>
@@ -48,7 +49,8 @@ function GameCard({ game, deleteGame, saveChanges }: GameCardProps) {
                         </span>
                             ))}
                         </div>
-                        <div className="flex items-center gap-1 justify-center">
+                        <label className="flex items-center gap-1 justify-center">
+                            <span className="sr-only">Czas gry w godzinach</span>
                             <input
                             type="number"
                             min="0"
@@ -59,8 +61,8 @@ function GameCard({ game, deleteGame, saveChanges }: GameCardProps) {
                             placeholder="Czas gry"
                             className="w-14 h-6 text-center border border-[#ddd] rounded bg-transparent text-xs sm:text-sm"
                             />
-                            <span className="text-xs sm:text-sm text-[#666]">godz.</span>
-                        </div>
+                            <span aria-hidden="true" className="text-xs sm:text-sm text-[#666]">{hoursUnit}</span>
+                        </label>
                     </div>
 
                     <div className="flex items-center gap-4 mt-2 justify-center">
@@ -94,7 +96,7 @@ function GameCard({ game, deleteGame, saveChanges }: GameCardProps) {
                         </div>
 
                         <div className="text-xs sm:text-sm text-gray-400 font-medium">
-                            {game.playtime ? `${game.playtime} godz.` : "Brak czasu"}
+                            {game.playtime ? formatHours(game.playtime) : "Brak czasu"}
                         </div>
                     </div>
                 <div className="flex items-center gap-4 mt-2 justify-center">

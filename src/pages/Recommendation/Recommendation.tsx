@@ -58,7 +58,7 @@ type UserPreferences = {
 function Recommendation() {
   const [recGames, setRec] = useState<Recommendation[]>([]);
   const [uid, setUid] = useState<string | null>(null);
-  const [maxScore, setMaxScore] = useState<number>(0);
+  const maxScore = Math.max(0, ...recGames.map((game) => game.score).filter(Number.isFinite));
   const [popularityWeight, setPopularityWeight] = useState(0.2);
   const [genreWeight, setGenreWeight] = useState(0.6);
   const [criticRatingWeight, setCriticRatingWeight] = useState(0.5);
@@ -323,8 +323,6 @@ function Recommendation() {
         })
         .sort((a, b) => b.score - a.score)
         .slice(0, 10);
-
-      setMaxScore(Math.max(...recommendations.map((g) => g.score)));
 
       setRec(recommendations);
     };

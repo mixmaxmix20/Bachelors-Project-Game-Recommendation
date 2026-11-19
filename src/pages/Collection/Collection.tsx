@@ -72,8 +72,8 @@ function Collection() {
     try {
       await addGameToUserCollection(uid, game);
     } catch (error) {
-      console.error("Bład dodawania gry");
-      alert("Nie udalo sie dodac gry");
+      console.error("Błąd dodawania gry");
+      alert("Nie udało się dodać gry");
     }
   };
 
@@ -84,8 +84,8 @@ function Collection() {
     try {
       await deleteGameFromUserCollection(uid, game);
     } catch (error) {
-      console.error("Bład usuwania gry");
-      alert("Nie udalo sie usunąć gry");
+      console.error("Błąd usuwania gry");
+      alert("Nie udało się usunąć gry");
     }
   };
 
@@ -131,7 +131,7 @@ function Collection() {
                 <img
                   loading="lazy"
                   src={`https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover}.png`}
-                  alt={game.name}
+                  alt={`Okładka gry ${game.name}`}
                   className="w-17.5 h-22 object-cover mr-2"
                 />
                 <span>{game.name}</span>

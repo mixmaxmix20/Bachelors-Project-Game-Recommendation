@@ -1,5 +1,6 @@
 import { availablePlatforms } from "../../domain/platforms";
 import { gameLengthBounds, releaseYearBounds, type PreferenceRange } from "../../domain/profileRanges";
+import { formatHours } from "../../components/common/formatNumbers";
 import { useState, useEffect } from "react";
 import Navbar from "../../components/layout/Navbar";
 import { useAuth } from "../../contexts/AuthContext";
@@ -151,8 +152,8 @@ function Profile() {
     try {
       await saveUserProfilePreferences(uid, data);
     } catch (error) {
-      console.error("Nie udało sie zaktualizować danych", error);
-      alert("Nie udało sie zapisać danych");
+      console.error("Nie udało się zaktualizować danych", error);
+      alert("Nie udało się zapisać danych");
     }
   }
 
@@ -187,7 +188,7 @@ function Profile() {
           <div className="flex flex-col items-start justify-center">
             <h3 className="text-xl font-bold mb-5">Długość gry</h3>
             <label htmlFor="game-length-min" className="mb-5">
-              <span className="sr-only">Długość gry </span>Od: <span className="text-xl font-bold">{lengthMin} godz.</span>
+              <span className="sr-only">Długość gry </span>Od: <span className="text-xl font-bold">{formatHours(lengthMin)}</span>
             </label>
             <input
               id="game-length-min" type="range" min={gameLengthBounds.min} max={gameLengthBounds.max} step={1}
@@ -196,7 +197,7 @@ function Profile() {
               className="range grow w-full lg:max-w-125 mb-5"
             />
             <label htmlFor="game-length-max" className="mb-5">
-              <span className="sr-only">Długość gry </span>Do: <span className="text-xl font-bold">{lengthMax} godz.</span>
+              <span className="sr-only">Długość gry </span>Do: <span className="text-xl font-bold">{formatHours(lengthMax)}</span>
             </label>
             <input
               id="game-length-max" type="range" min={gameLengthBounds.min} max={gameLengthBounds.max} step={1}
