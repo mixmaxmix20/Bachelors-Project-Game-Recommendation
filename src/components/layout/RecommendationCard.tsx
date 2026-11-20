@@ -1,8 +1,8 @@
-import type {Recommendation} from "../../pages/Recommendation/Recommendation";
+import type { RankedRecommendation } from "../../types/recommendation";
 import { formatHours, formatNumber, formatRelativeScore } from "../common/formatNumbers";
 
 interface RecommendationCardProps {
-    rec: Recommendation,
+    rec: RankedRecommendation,
     index: number,
     maxScore: number,
     avgPlaytimeRatio?: number,
@@ -10,12 +10,12 @@ interface RecommendationCardProps {
 
 function RecommendationCard({rec, index, maxScore, avgPlaytimeRatio }: RecommendationCardProps) {
     const relativeScore = formatRelativeScore(rec.score, maxScore);
-    const expectedPlaytime = Number.isFinite(rec.time) && avgPlaytimeRatio !== undefined
+    const expectedPlaytime = typeof rec.time === "number" && Number.isFinite(rec.time) && avgPlaytimeRatio !== undefined
         ? rec.time * avgPlaytimeRatio
         : NaN;
 
     return(
-        <div tabIndex={0} className="relative flex items-center w-full" key={rec.id}>
+        <div tabIndex={0} className="relative flex items-center w-full">
             <div className="hidden min-[75rem]:flex absolute -left-20 p-10 text-5xl font-bold text-gray-200 bg-black text-center w-10 h-[50%] justify-center items-center">
                 {index + 1}
             </div>
@@ -40,7 +40,7 @@ function RecommendationCard({rec, index, maxScore, avgPlaytimeRatio }: Recommend
                     <div className="text-sm text-ui-muted mb-1.25">{rec.releaseDate}</div>
                     <div className="text-sm text-ui-muted mb-1.25">{rec.platforms}</div>
                     <div className="text-sm text-ui-muted mb-1.25">
-                        Średni czas gry: {Number.isFinite(rec.time) ? formatHours(rec.time) : "Brak danych"}
+                        Średni czas gry: {typeof rec.time === "number" && Number.isFinite(rec.time) ? formatHours(rec.time) : "Brak danych"}
                     </div>
                     <div className="text-sm text-ui-muted mb-1.25">
                         Oczekiwany czas gry:{" "}
@@ -50,7 +50,7 @@ function RecommendationCard({rec, index, maxScore, avgPlaytimeRatio }: Recommend
                         {rec.description}
                     </div>
                     <h4 className="mt-1.25 text-base text-orange-500">
-                        Ocena krytyków: {Number.isFinite(rec.rating) ? `${formatNumber(rec.rating)}/100` : "Brak ocen"}
+                        Ocena krytyków: {typeof rec.rating === "number" && Number.isFinite(rec.rating) ? `${formatNumber(rec.rating)}/100` : "Brak ocen"}
                     </h4>
                     <h4 className="mt-1.25 text-base text-orange-500">
                         Ocena graczy: {rec.globalRating > 0 && Number.isFinite(rec.globalRating) ? `${formatNumber(rec.globalRating)}/5` : "Brak ocen"}

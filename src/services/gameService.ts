@@ -6,9 +6,20 @@ import {
   setDoc,
   deleteDoc,
   increment,
+  query,
+  and,
+  where,
+  orderBy,
+  limit,
 } from "firebase/firestore";
 import { db } from "./firebase";
 import type { Game } from "../types/game";
+import type {
+  RecommendationCandidate,
+  RecommendationCollectionEntry,
+  RecommendationSettings,
+  UserProfilePreferences,
+} from "../types/recommendation";
 import { normalizePlatforms } from "../domain/platforms";
 import { gameLengthBounds, normalizePreferenceRange, releaseYearBounds } from "../domain/profileRanges";
 
@@ -22,22 +33,6 @@ export interface NewGameData {
   rating: number | null;
   time: number | null;
   year: number | null;
-}
-
-export interface UserPreferences {
-  minTime: number;
-  maxTime: number;
-  minYear: number;
-  maxYear: number;
-  platforms: string[];
-  genres: string[];
-  themes: string[];
-}
-
-export interface RecommendationSettings {
-  ratingWeight: number;
-  genreWeight: number;
-  criticRatingWeight: number;
 }
 
 let memoryGamesCache: Game[] | null = null;
@@ -114,6 +109,48 @@ export const fetchUserGames = async (uid: string): Promise<Game[]> => {
   });
 };
 
+export const fetchRecommendationCollection = async (
+  uid: string
+): Promise<RecommendationCollectionEntry[]> => {
+  const gamesRef = collection(db, `users/${uid}/games`);
+  const snapshot = await getDocs(gamesRef);
+  // Keep stored IDs and missing fields as read for the recommendation formulas.
+  return snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+};
+
+export const fetchRecommendationCandidates = async (
+  minYear: number,
+  maxYear: number
+): Promise<RecommendationCandidate[]> => {
+  const gamesRef = collection(db, "gamesDatabase");
+  const gamesQuery = query(
+    gamesRef,
+    and(
+      where("year", ">=", minYear),
+      where("year", "<=", maxYear)
+    ),
+    orderBy("rating", "desc"),
+    limit(100)
+  );
+  const snapshot = await getDocs(gamesQuery);
+  return snapshot.docs.map((docSnap) => {
+    const data = docSnap.data();
+    return {
+      id: parseInt(docSnap.id, 10),
+      name: data.name,
+      cover: data.coverId,
+      platforms: data.platforms,
+      description: data.desc,
+      rating: data.rating,
+      time: data.time,
+      releaseDate: data.year,
+      genres: data.genres,
+      themes: data.themes,
+      globalRating: data.ratingCount > 0 ? data.totalRatings / data.ratingCount : 0,
+    };
+  });
+};
+
 export const addGameToUserCollection = async (uid: string, game: Game) => {
   const gameDoc = doc(db, `users/${uid}/games`, String(game.id));
   return setDoc(
@@ -177,7 +214,7 @@ const profilePreferencesDocument = "preferences";
 
 export const fetchUserProfilePreferences = async (
   uid: string
-): Promise<UserPreferences> => {
+): Promise<UserProfilePreferences> => {
   const profileRef = collection(db, `users/${uid}/profileInfo`);
   const snapshot = await getDocs(profileRef);
   const savedPreferences = snapshot.docs.find((entry) => entry.id === profilePreferencesDocument);
