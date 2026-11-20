@@ -1,19 +1,19 @@
-import React from "react";
+import { Fragment, type ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user } = useAuth();
+  const { user, isSigningOut } = useAuth();
 
   if (!user) {
-    return <Navigate to="/login" />;
+    return isSigningOut ? null : <Navigate to="/login" />;
   }
 
-  return children;
+  return <Fragment key={user.uid}>{children}</Fragment>;
 };
 
 export default ProtectedRoute;

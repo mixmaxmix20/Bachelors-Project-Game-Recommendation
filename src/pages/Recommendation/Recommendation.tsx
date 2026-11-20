@@ -2,8 +2,8 @@ import { matchesGamePlatforms, supportedPlatforms } from "../../domain/platforms
 import Navbar from "../../components/layout/Navbar";
 import RecommendationCard from "../../components/layout/RecommendationCard";
 import { useState, useEffect, useCallback } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth, db } from "../../services/firebase";
+import { useAuth } from "../../contexts/AuthContext";
+import { db } from "../../services/firebase";
 import {
   collection,
   getDocs,
@@ -56,8 +56,9 @@ type UserPreferences = {
 
 
 function Recommendation() {
+  const { user } = useAuth();
+  const uid = user?.uid;
   const [recGames, setRec] = useState<Recommendation[]>([]);
-  const [uid, setUid] = useState<string | null>(null);
   const maxScore = Math.max(0, ...recGames.map((game) => game.score).filter(Number.isFinite));
   const [popularityWeight, setPopularityWeight] = useState(0.2);
   const [genreWeight, setGenreWeight] = useState(0.6);
@@ -223,22 +224,23 @@ function Recommendation() {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) return;
+    if (!uid) return;
+    let active = true;
 
-      const { uid } = user;
-      setUid(uid);
-
+    const loadRecommendations = async () => {
       const preferences = await fetchUserProfilePreferences(uid);
+      if (!active) return;
       setUserProfilePreferences(preferences);
 
       const settings = await fetchRecommendationSettings(uid);
+      if (!active) return;
       setPopularityWeight(settings.ratingWeight);
       setGenreWeight(settings.genreWeight);
       setCriticRatingWeight(settings.criticRatingWeight);
 
       const userGamesRef = collection(db, `users/${uid}/games`);
       const userGamesSnapshot = await getDocs(userGamesRef);
+      if (!active) return;
       const ratedGamesData = userGamesSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -257,6 +259,7 @@ function Recommendation() {
         limit(100)
       );
       const gamesSnapshot = await getDocs(q);
+      if (!active) return;
       const allGamesData = gamesSnapshot.docs.map((doc) => {
         const data = doc.data();
         return {
@@ -283,10 +286,16 @@ function Recommendation() {
         allGamesData
       );
       setUserPreferences(calculatedPreferences);
+    };
+
+    loadRecommendations().catch((error) => {
+      if (active) console.error("Nie udało się wczytać danych rekomendacji", error);
     });
 
-    return () => unsubscribe();
-  }, [calculateUserPreferences]);
+    return () => {
+      active = false;
+    };
+  }, [uid, calculateUserPreferences]);
 
   useEffect(() => {
     if (!userPreferences || !userProfilePreferences) return;

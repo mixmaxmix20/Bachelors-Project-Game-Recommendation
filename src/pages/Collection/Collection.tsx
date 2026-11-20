@@ -1,8 +1,7 @@
 import Navbar from "../../components/layout/Navbar";
 import GameCard from "../../components/layout/GameCard";
 import { useState, useEffect } from "react";
-import { auth } from "../../services/firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { useAuth } from "../../contexts/AuthContext";
 import type { Game } from "../../types/game";
 import {
   fetchGamesDatabase,
@@ -14,29 +13,29 @@ import {
 } from "../../services/gameService";
 
 function Collection() {
+  const { user } = useAuth();
+  const uid = user?.uid;
   const [allGames, setAllGames] = useState<Game[]>([]);
   const [games, setGames] = useState<Game[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchResults, setSearchResults] = useState<Game[]>([]);
-  const [uid, setUid] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user == null) {
-        return;
-      }
+    if (!uid) return;
 
-      const { uid } = user;
-      setUid(uid);
-
-      const userGamesList = await fetchUserGames(uid);
-      setGames(userGamesList);
-    });
+    let active = true;
+    fetchUserGames(uid)
+      .then((userGamesList) => {
+        if (active) setGames(userGamesList);
+      })
+      .catch((error) => {
+        if (active) console.error("Nie udało się wczytać kolekcji", error);
+      });
 
     return () => {
-      unsubscribe();
+      active = false;
     };
-  }, []);
+  }, [uid]);
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);

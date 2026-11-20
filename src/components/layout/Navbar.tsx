@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
-import { auth } from "../../services/firebase";
-import { signOut } from "firebase/auth";
+import { useAuth } from "../../contexts/AuthContext";
 import Button from "./Button";
 
 function Navbar() {
   const navigate = useNavigate();
+  const { logout, isSigningOut } = useAuth();
 
   function onClickProfile() {
     navigate("/profile");
@@ -18,9 +18,12 @@ function Navbar() {
     navigate("/recommendation");
   }
 
-  function onClickLogout() {
-    signOut(auth);
-    navigate("/");
+  async function onClickLogout() {
+    try {
+      await logout();
+    } catch {
+      alert("Nie udało się wylogować. Spróbuj ponownie.");
+    }
   }
 
   return (
@@ -46,7 +49,7 @@ function Navbar() {
             </svg>
             <span className="dock-label">Rekomendacje</span>
           </button>
-          <button onClick={onClickLogout}>
+          <button onClick={onClickLogout} disabled={isSigningOut}>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
             </svg>
@@ -63,7 +66,7 @@ function Navbar() {
             <Button onClickPar={onClickProfile}>Profil</Button>
             <Button onClickPar={onClickCollection}>Kolekcja gier</Button>
             <Button onClickPar={onClickRecommendation}>Rekomendacje</Button>
-            <Button onClickPar={onClickLogout} isLogout={true}>Wyloguj się</Button>
+            <Button onClickPar={onClickLogout} isLogout={true} disabled={isSigningOut}>Wyloguj się</Button>
           </nav>
         </aside>
       </>

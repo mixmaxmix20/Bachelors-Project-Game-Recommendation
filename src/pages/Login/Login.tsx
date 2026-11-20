@@ -1,24 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../services/firebase";
 import { useAuth } from "../../contexts/AuthContext";
 import Button from "../../components/layout/Button";
 
 function Login() {
-  const { login } = useAuth();
+  const { user, login } = useAuth();
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [emailError, setEmailError] = useState("");
-  const [, setGeneralError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [signedInUid, setSignedInUid] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
-  function onButtonClick() {
+  useEffect(() => {
+    if (signedInUid && user?.uid === signedInUid) {
+      navigate("/profile");
+    }
+  }, [navigate, signedInUid, user?.uid]);
+
+  async function onButtonClick() {
+    if (isSubmitting) return;
+
     setPasswordError("");
     setEmailError("");
-    setGeneralError("");
 
     if ("" === email) {
       setEmailError("Proszę wprowadzić prawidłowy adres email");
@@ -30,14 +36,13 @@ function Login() {
       return;
     }
 
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        login(userCredential.user);
-        navigate("/profile");
-      })
-      .catch(() => {
-        alert(`Błąd: Niepoprawne dane`);
-      });
+    setIsSubmitting(true);
+    try {
+      setSignedInUid(await login(email, password));
+    } catch {
+      setIsSubmitting(false);
+      alert(`Błąd: Niepoprawne dane`);
+    }
   }
 
   return (
@@ -69,7 +74,7 @@ function Login() {
         <label className="text-red-500 text-xs">{passwordError}</label>
       </div>
       <br />
-      <Button onClickPar={onButtonClick} isStandalone={true}>Zaloguj się</Button>
+      <Button onClickPar={onButtonClick} isStandalone={true} disabled={isSubmitting}>Zaloguj się</Button>
     </div>
   );
 }

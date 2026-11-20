@@ -1,24 +1,32 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../services/firebase";
+import { useAuth } from "../../contexts/AuthContext";
 import Button from "../../components/layout/Button";
 
 function Register() {
+  const { user, register } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [passwordConfirmError, setPasswordConfirmError] = useState("");
-  const [generalError, setGeneralError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registeredUid, setRegisteredUid] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  function onButtonClick() {
+  useEffect(() => {
+    if (registeredUid && user?.uid === registeredUid) {
+      navigate("/profile");
+    }
+  }, [navigate, registeredUid, user?.uid]);
+
+  async function onButtonClick() {
+    if (isSubmitting) return;
+
     setPasswordError("");
     setEmailError("");
     setPasswordConfirmError("");
-    setGeneralError("");
 
     if ("" === email) {
       setEmailError("Proszę wprowadzić prawidłowy adres email");
@@ -40,13 +48,13 @@ function Register() {
       return;
     }
 
-    createUserWithEmailAndPassword(auth, email, password)
-      .then(() => {
-        navigate("/profile");
-      })
-      .catch(() => {
-        alert(`Błąd: Podany email jest już w użyciu`);
-      });
+    setIsSubmitting(true);
+    try {
+      setRegisteredUid(await register(email, password));
+    } catch {
+      setIsSubmitting(false);
+      alert(`Błąd: Podany email jest już w użyciu`);
+    }
   }
 
   return (
@@ -91,10 +99,7 @@ function Register() {
         <label className="text-red-500 text-xs">{passwordConfirmError}</label>
       </div>
       <br />
-      <Button onClickPar={onButtonClick} isStandalone={true}>Stwórz profil</Button>
-      <div className="flex flex-col items-center justify-center">
-        {generalError && <p className="text-red-500 text-xs">{generalError}</p>}
-      </div>
+      <Button onClickPar={onButtonClick} isStandalone={true} disabled={isSubmitting}>Stwórz profil</Button>
     </div>
   );
 }
