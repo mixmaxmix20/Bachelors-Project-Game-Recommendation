@@ -24,7 +24,10 @@ function Collection() {
   if (allGames && normalizedQuery.trim()) {
     const ownedIds = new Set(games.map((game) => game.id));
     for (const game of allGames) {
-      if (game.name.toLowerCase().includes(normalizedQuery) && !ownedIds.has(game.id)) {
+      if (
+        game.name.toLowerCase().includes(normalizedQuery) &&
+        !ownedIds.has(game.id)
+      ) {
         searchResults.push(game);
         if (searchResults.length === 10) break;
       }
@@ -89,23 +92,29 @@ function Collection() {
     }
   };
 
-  const saveChanges = async (gameId: number, starRating: number, hours: number) => {
+  const saveChanges = async (
+    gameId: number,
+    starRating: number,
+    hours: number,
+  ) => {
     const previousRating = games.find((g) => g.id === gameId)?.starRating || 0;
 
     setGames((prevGames) =>
       prevGames.map((game) =>
-        game.id === gameId ? { ...game, starRating: starRating, playtime: hours } : game
-      )
+        game.id === gameId
+          ? { ...game, starRating: starRating, playtime: hours }
+          : game,
+      ),
     );
 
     if (!uid) return;
     try {
-      await updateUserGameRating(uid, gameId, starRating, previousRating)
+      await updateUserGameRating(uid, gameId, starRating, previousRating);
       await updateUserGamePlaytime(uid, gameId, hours);
     } catch (error) {
       console.error("Błąd edycji danych.");
     }
-  }
+  };
 
   return (
     <div className="flex flex-col items-center justify-start pt-2 sm:pt-5 min-h-screen bg-[#121416] text-[#ddddff] pb-24 pointer-fine:pb-8 pointer-fine:pl-16">
@@ -151,9 +160,9 @@ function Collection() {
           />
         ))}
         {games.length === 0 && (
-            <p className="text-ui-muted mt-12 text-center text-lg">
-              Twoja kolekcja jest pusta! Wyszukaj i dodaj gry powyżej.
-            </p>
+          <p className="text-ui-muted mt-12 text-center text-lg">
+            Twoja kolekcja jest pusta! Wyszukaj i dodaj gry powyżej.
+          </p>
         )}
       </div>
     </div>

@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { availablePlatforms, matchesGamePlatforms, normalizePlatforms, supportedPlatforms } from "../src/domain/platforms.ts";
+import {
+  availablePlatforms,
+  matchesGamePlatforms,
+  normalizePlatforms,
+  supportedPlatforms,
+} from "../src/domain/platforms.ts";
 
 for (const [legacy, canonical] of [
   ["Xbox Series X/S", "Xbox Series X|S"],
@@ -11,13 +16,29 @@ for (const [legacy, canonical] of [
   test(`matches both spellings of ${canonical} in profiles and game lists`, () => {
     assert.ok(availablePlatforms.includes(canonical));
     assert.deepEqual(normalizePlatforms([legacy]), [canonical]);
-    assert.ok(matchesGamePlatforms(supportedPlatforms([legacy]), `Dreamcast, ${canonical}`));
-    assert.ok(matchesGamePlatforms(supportedPlatforms([canonical]), `Wii U,  ${legacy} `));
+    assert.ok(
+      matchesGamePlatforms(
+        supportedPlatforms([legacy]),
+        `Dreamcast, ${canonical}`,
+      ),
+    );
+    assert.ok(
+      matchesGamePlatforms(
+        supportedPlatforms([canonical]),
+        `Wii U,  ${legacy} `,
+      ),
+    );
   });
 }
 
 test("normalization preserves unknown names and first-seen order across reads and saves", () => {
-  const read = normalizePlatforms(["  GameCube ", "Neo Geo", "Nintendo GameCube", "", " PC "]);
+  const read = normalizePlatforms([
+    "  GameCube ",
+    "Neo Geo",
+    "Nintendo GameCube",
+    "",
+    " PC ",
+  ]);
   assert.deepEqual(read, ["Nintendo GameCube", "Neo Geo", "PC"]);
   assert.deepEqual(normalizePlatforms(read), read);
   assert.ok(matchesGamePlatforms(supportedPlatforms(read), "Neo Geo"));
@@ -25,7 +46,10 @@ test("normalization preserves unknown names and first-seen order across reads an
 
 test("Wii compatibility works in one direction", () => {
   assert.ok(matchesGamePlatforms(supportedPlatforms(["Wii"]), "GameCube"));
-  assert.equal(matchesGamePlatforms(supportedPlatforms(["GameCube"]), "Wii"), false);
+  assert.equal(
+    matchesGamePlatforms(supportedPlatforms(["GameCube"]), "Wii"),
+    false,
+  );
 });
 
 test("Xbox Series compatibility stops after one generation", () => {

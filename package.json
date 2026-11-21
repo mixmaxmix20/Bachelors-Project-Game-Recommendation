@@ -7,7 +7,9 @@
     "dev": "vite",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"tests/**/*.mjs\" vite.config.ts tsconfig.json tsconfig.node.json package.json index.html",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"tests/**/*.mjs\" vite.config.ts tsconfig.json tsconfig.node.json package.json index.html"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
@@ -24,7 +26,15 @@
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.0.5",
     "daisyui": "^5.7.16",
+    "prettier": "3.10.1",
     "typescript": "^7.0.2",
     "vite": "8.2.1"
+  },
+  "prettier": {
+    "endOfLine": "auto",
+    "tabWidth": 2,
+    "useTabs": false,
+    "singleQuote": false,
+    "semi": true
   }
 }

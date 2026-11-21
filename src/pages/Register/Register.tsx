@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import AuthField from "../../components/common/AuthField";
 import Button from "../../components/layout/Button";
 
 function Register() {
@@ -21,7 +22,8 @@ function Register() {
     }
   }, [navigate, registeredUid, user?.uid]);
 
-  async function onButtonClick() {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     if (isSubmitting) return;
 
     setPasswordError("");
@@ -58,48 +60,47 @@ function Register() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#121416] text-[#ddddff]">
-      <div className="flex flex-col items-center justify-center text-6xl font-bold">
-        <h2 className="text-3xl md:text-6xl">Rejestracja</h2>
-      </div>
-      <br />
-      <div className="flex flex-col items-start justify-center">
-        <input
-          value={email}
-          placeholder="Wpisz swój email"
-          onChange={(ev) => setEmail(ev.target.value)}
-          className="h-12 w-full max-w-sm md:w-96 text-lg rounded-lg border border-ui-border ui-focus pl-2 self-center"
-          autoComplete="off"
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-[#121416] px-4 text-[#ddddff]">
+      <h2 className="text-3xl font-bold md:text-6xl">Rejestracja</h2>
+      <form
+        noValidate
+        onSubmit={handleSubmit}
+        className="flex w-full max-w-sm flex-col items-center gap-5"
+      >
+        <AuthField
+          name="email"
+          label="Adres e-mail"
           type="email"
+          placeholder="Wpisz swój email"
+          autoComplete="off"
+          value={email}
+          error={emailError}
+          onChange={setEmail}
         />
-        <label className="text-red-500 text-xs">{emailError}</label>
-      </div>
-      <br />
-      <div className="flex flex-col items-start justify-center">
-        <input
-          value={password}
+        <AuthField
+          name="password"
+          label="Hasło"
           type="password"
           placeholder="Wpisz swoje hasło"
-          onChange={(ev) => setPassword(ev.target.value)}
-          className="h-12 w-full max-w-sm md:w-96 text-lg rounded-lg border border-ui-border ui-focus pl-2 self-center"
           autoComplete="new-password"
+          value={password}
+          error={passwordError}
+          onChange={setPassword}
         />
-        <label className="text-red-500 text-xs">{passwordError}</label>
-      </div>
-      <br />
-      <div className="flex flex-col items-start justify-center">
-        <input
-          value={passwordConfirm}
+        <AuthField
+          name="passwordConfirm"
+          label="Potwierdzenie hasła"
           type="password"
           placeholder="Potwierdź swoje hasło"
-          onChange={(ev) => setPasswordConfirm(ev.target.value)}
-          className="h-12 w-full max-w-sm md:w-96 text-lg rounded-lg border border-ui-border ui-focus pl-2 self-center"
           autoComplete="new-password"
+          value={passwordConfirm}
+          error={passwordConfirmError}
+          onChange={setPasswordConfirm}
         />
-        <label className="text-red-500 text-xs">{passwordConfirmError}</label>
-      </div>
-      <br />
-      <Button onClickPar={onButtonClick} isStandalone={true} disabled={isSubmitting}>Stwórz profil</Button>
+        <Button type="submit" isStandalone disabled={isSubmitting}>
+          Stwórz profil
+        </Button>
+      </form>
     </div>
   );
 }

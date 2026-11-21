@@ -10,7 +10,10 @@ import type {
 } from "../types/recommendation";
 
 function splitString(value?: string): string[] {
-  return (value || "").split(",").map((entry) => entry.trim()).filter(Boolean);
+  return (value || "")
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 }
 
 export const defaultRecommendationSettings: RecommendationSettings = {
@@ -19,28 +22,41 @@ export const defaultRecommendationSettings: RecommendationSettings = {
   criticRatingWeight: 0.5,
 };
 
-export function resolveRecommendationSettings(data?: Partial<RecommendationSettings>): RecommendationSettings {
+export function resolveRecommendationSettings(
+  data?: Partial<RecommendationSettings>,
+): RecommendationSettings {
   return {
-    ratingWeight: data?.ratingWeight ?? defaultRecommendationSettings.ratingWeight,
+    ratingWeight:
+      data?.ratingWeight ?? defaultRecommendationSettings.ratingWeight,
     genreWeight: data?.genreWeight ?? defaultRecommendationSettings.genreWeight,
-    criticRatingWeight: data?.criticRatingWeight ?? defaultRecommendationSettings.criticRatingWeight,
+    criticRatingWeight:
+      data?.criticRatingWeight ??
+      defaultRecommendationSettings.criticRatingWeight,
   };
 }
 
 export function isStarRating(value: unknown): value is number {
-  return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 5;
+  return (
+    typeof value === "number" &&
+    Number.isInteger(value) &&
+    value >= 1 &&
+    value <= 5
+  );
 }
 
 export function isPositiveTime(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value) && value > 0;
 }
 
-export function expectedPlaytime(time: number | null | undefined, ratio: number | null): number | null {
+export function expectedPlaytime(
+  time: number | null | undefined,
+  ratio: number | null,
+): number | null {
   return isPositiveTime(time) ? time * (ratio ?? 1) : null;
 }
 
 export function inferPreferences(
-  history: readonly RecommendationHistoryEntry[]
+  history: readonly RecommendationHistoryEntry[],
 ): InferredPreferences {
   const genreWeights: Record<string, number> = {};
   const themeWeights: Record<string, number> = {};
@@ -81,21 +97,41 @@ export function inferPreferences(
   }
 
   if (!ratios.length) {
-    return { genreWeights, themeWeights, ratedGamesCount, timePreference: null, avgPlaytimeRatio: null };
+    return {
+      genreWeights,
+      themeWeights,
+      ratedGamesCount,
+      timePreference: null,
+      avgPlaytimeRatio: null,
+    };
   }
 
-  const avgPlaytimeRatio = ratios.reduce((sum, ratio) => sum + ratio, 0) / ratios.length;
-  const variance = ratios.reduce((sum, ratio) => sum + (ratio - avgPlaytimeRatio) ** 2, 0) / ratios.length;
+  const avgPlaytimeRatio =
+    ratios.reduce((sum, ratio) => sum + ratio, 0) / ratios.length;
+  const variance =
+    ratios.reduce((sum, ratio) => sum + (ratio - avgPlaytimeRatio) ** 2, 0) /
+    ratios.length;
   const threshold = 0.5 * Math.sqrt(variance);
   const deviation = avgPlaytimeRatio - 1;
-  const timePreference = deviation < -threshold ? "short" : deviation > threshold ? "long" : "medium";
-  return { genreWeights, themeWeights, ratedGamesCount, timePreference, avgPlaytimeRatio };
+  const timePreference =
+    deviation < -threshold
+      ? "short"
+      : deviation > threshold
+        ? "long"
+        : "medium";
+  return {
+    genreWeights,
+    themeWeights,
+    ratedGamesCount,
+    timePreference,
+    avgPlaytimeRatio,
+  };
 }
 
 function calculateTimeEngagement(
   game: RecommendationCandidate,
   prefs: InferredPreferences,
-  profile: UserProfilePreferences
+  profile: UserProfilePreferences,
 ): number {
   const hours = expectedPlaytime(game.time, prefs.avgPlaytimeRatio);
   if (hours === null) return 0;
@@ -128,7 +164,7 @@ function calculateGameScore(
   game: RecommendationCandidate,
   prefs: InferredPreferences,
   profile: UserProfilePreferences,
-  settings: RecommendationSettings
+  settings: RecommendationSettings,
 ): number {
   const { ratingWeight, genreWeight, criticRatingWeight } = settings;
   const personalizationWeight = 1 - ratingWeight;
@@ -138,7 +174,8 @@ function calculateGameScore(
   const normalizedRating = Number(game.rating) / 100;
   const normalizedUserRating = game.globalRating / 5;
   const combinedRating =
-    normalizedRating * criticRatingWeight + normalizedUserRating * userRatingWeight;
+    normalizedRating * criticRatingWeight +
+    normalizedUserRating * userRatingWeight;
   const popularityScore = combinedRating * ratingWeight;
 
   let personalizationScore = 0;
@@ -168,7 +205,7 @@ export function rankRecommendations(
   collection: readonly RecommendationCollectionEntry[],
   profile: UserProfilePreferences,
   prefs: InferredPreferences,
-  settings: RecommendationSettings
+  settings: RecommendationSettings,
 ): RankedRecommendation[] {
   const supported = supportedPlatforms(profile.platforms);
   const ownedIds = new Set(collection.map((entry) => entry.id));
@@ -179,12 +216,18 @@ export function rankRecommendations(
       score: calculateGameScore(game, prefs, profile, settings),
     }))
     .filter((game) => {
-      const matchesYear = game.releaseDate >= profile.minYear && game.releaseDate <= profile.maxYear;
+      const matchesYear =
+        game.releaseDate >= profile.minYear &&
+        game.releaseDate <= profile.maxYear;
       const matchesPlatform = matchesGamePlatforms(supported, game.platforms);
       const genres = splitString(game.genres);
       const themes = splitString(game.themes);
-      const matchesGenre = profile.genres.some((genre) => genres.includes(genre));
-      const matchesTheme = profile.themes.some((theme) => themes.includes(theme) || themes.includes("-"));
+      const matchesGenre = profile.genres.some((genre) =>
+        genres.includes(genre),
+      );
+      const matchesTheme = profile.themes.some(
+        (theme) => themes.includes(theme) || themes.includes("-"),
+      );
       return matchesYear && matchesPlatform && matchesGenre && matchesTheme;
     })
     .sort((a, b) => b.score - a.score)

@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
@@ -31,7 +37,9 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [logoutStatus, setLogoutStatus] = useState<"idle" | "pending" | "navigating">("idle");
+  const [logoutStatus, setLogoutStatus] = useState<
+    "idle" | "pending" | "navigating"
+  >("idle");
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -55,7 +63,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const register = async (email: string, password: string) => {
-    const { user } = await createUserWithEmailAndPassword(auth, email, password);
+    const { user } = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password,
+    );
     return user.uid;
   };
 
@@ -75,7 +87,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, isSigningOut: logoutStatus !== "idle", login, register, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        isSigningOut: logoutStatus !== "idle",
+        login,
+        register,
+        logout,
+      }}
+    >
       {!loading && children}
     </AuthContext.Provider>
   );

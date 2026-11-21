@@ -24,7 +24,11 @@ import type {
 import { normalizePlatforms } from "../domain/platforms";
 import { resolveRecommendationSettings } from "../domain/recommendations";
 import { loadRecommendationHistory } from "./recommendationHistory";
-import { gameLengthBounds, normalizePreferenceRange, releaseYearBounds } from "../domain/profileRanges";
+import {
+  gameLengthBounds,
+  normalizePreferenceRange,
+  releaseYearBounds,
+} from "../domain/profileRanges";
 
 let memoryGamesCache: Game[] | null = null;
 let gamesFetchPromise: Promise<Game[]> | null = null;
@@ -93,7 +97,7 @@ export const fetchUserGames = async (uid: string): Promise<Game[]> => {
 };
 
 export const fetchRecommendationCollection = async (
-  uid: string
+  uid: string,
 ): Promise<RecommendationCollectionEntry[]> => {
   const gamesRef = collection(db, `users/${uid}/games`);
   const snapshot = await getDocs(gamesRef);
@@ -103,10 +107,14 @@ export const fetchRecommendationCollection = async (
   });
 };
 
-export const fetchRecommendationHistory = (entries: readonly RecommendationCollectionEntry[]) =>
+export const fetchRecommendationHistory = (
+  entries: readonly RecommendationCollectionEntry[],
+) =>
   loadRecommendationHistory(entries, async (ids) => {
     const games = collection(db, "gamesDatabase");
-    const snapshot = await getDocs(query(games, where(documentId(), "in", ids)));
+    const snapshot = await getDocs(
+      query(games, where(documentId(), "in", ids)),
+    );
     return snapshot.docs.map((docSnap) => {
       const { genres, themes, time } = docSnap.data();
       return { id: docSnap.id, genres, themes, time };
@@ -115,17 +123,14 @@ export const fetchRecommendationHistory = (entries: readonly RecommendationColle
 
 export const fetchRecommendationCandidates = async (
   minYear: number,
-  maxYear: number
+  maxYear: number,
 ): Promise<RecommendationCandidate[]> => {
   const gamesRef = collection(db, "gamesDatabase");
   const gamesQuery = query(
     gamesRef,
-    and(
-      where("year", ">=", minYear),
-      where("year", "<=", maxYear)
-    ),
+    and(where("year", ">=", minYear), where("year", "<=", maxYear)),
     orderBy("rating", "desc"),
-    limit(100)
+    limit(100),
   );
   const snapshot = await getDocs(gamesQuery);
   return snapshot.docs.map((docSnap) => {
@@ -141,7 +146,8 @@ export const fetchRecommendationCandidates = async (
       releaseDate: data.year,
       genres: data.genres,
       themes: data.themes,
-      globalRating: data.ratingCount > 0 ? data.totalRatings / data.ratingCount : 0,
+      globalRating:
+        data.ratingCount > 0 ? data.totalRatings / data.ratingCount : 0,
     };
   });
 };
@@ -151,14 +157,11 @@ export const addGameToUserCollection = async (uid: string, game: Game) => {
   return setDoc(
     gameDoc,
     { name: game.name, coverId: game.cover },
-    { merge: true }
+    { merge: true },
   );
 };
 
-export const deleteGameFromUserCollection = async (
-  uid: string,
-  game: Game
-) => {
+export const deleteGameFromUserCollection = async (uid: string, game: Game) => {
   const previousRating = game.starRating || 0;
   const gameDoc = doc(db, `users/${uid}/games`, String(game.id));
   await deleteDoc(gameDoc);
@@ -171,7 +174,7 @@ export const deleteGameFromUserCollection = async (
         totalRatings: increment(-previousRating),
         ratingCount: increment(-1),
       },
-      { merge: true }
+      { merge: true },
     );
   }
 };
@@ -180,7 +183,7 @@ export const updateUserGameRating = async (
   uid: string,
   gameId: number,
   starRating: number,
-  previousRating: number
+  previousRating: number,
 ) => {
   const gameDoc = doc(db, `users/${uid}/games`, String(gameId));
   await setDoc(gameDoc, { starRating }, { merge: true });
@@ -192,14 +195,14 @@ export const updateUserGameRating = async (
       totalRatings: increment(starRating - previousRating),
       ratingCount: previousRating === 0 ? increment(1) : increment(0),
     },
-    { merge: true }
+    { merge: true },
   );
 };
 
 export const updateUserGamePlaytime = async (
   uid: string,
   gameId: number,
-  hours: number
+  hours: number,
 ) => {
   const gameDoc = doc(db, `users/${uid}/games`, String(gameId));
   return setDoc(gameDoc, { playtime: hours }, { merge: true });
@@ -209,12 +212,20 @@ const getProfilePreferencesRef = (uid: string) =>
   doc(db, "users", uid, "profileInfo", "preferences");
 
 export const fetchUserProfilePreferences = async (
-  uid: string
+  uid: string,
 ): Promise<UserProfilePreferences> => {
   const snapshot = await getDoc(getProfilePreferencesRef(uid));
   const data = snapshot.data() ?? {};
-  const [minYear, maxYear] = normalizePreferenceRange(data.yearStart, data.yearEnd, releaseYearBounds);
-  const [minTime, maxTime] = normalizePreferenceRange(data.timeStart, data.timeEnd, gameLengthBounds);
+  const [minYear, maxYear] = normalizePreferenceRange(
+    data.yearStart,
+    data.yearEnd,
+    releaseYearBounds,
+  );
+  const [minTime, maxTime] = normalizePreferenceRange(
+    data.timeStart,
+    data.timeEnd,
+    gameLengthBounds,
+  );
 
   return {
     minTime,
@@ -237,22 +248,34 @@ export const saveUserProfilePreferences = async (
     platforms: string[];
     timeStart: number;
     timeEnd: number;
-  }
+  },
 ) => {
-  const [yearStart, yearEnd] = normalizePreferenceRange(data.yearStart, data.yearEnd, releaseYearBounds);
-  const [timeStart, timeEnd] = normalizePreferenceRange(data.timeStart, data.timeEnd, gameLengthBounds);
-  return setDoc(getProfilePreferencesRef(uid), {
-    ...data,
-    yearStart,
-    yearEnd,
-    timeStart,
-    timeEnd,
-    platforms: normalizePlatforms(data.platforms),
-  }, { merge: true });
+  const [yearStart, yearEnd] = normalizePreferenceRange(
+    data.yearStart,
+    data.yearEnd,
+    releaseYearBounds,
+  );
+  const [timeStart, timeEnd] = normalizePreferenceRange(
+    data.timeStart,
+    data.timeEnd,
+    gameLengthBounds,
+  );
+  return setDoc(
+    getProfilePreferencesRef(uid),
+    {
+      ...data,
+      yearStart,
+      yearEnd,
+      timeStart,
+      timeEnd,
+      platforms: normalizePlatforms(data.platforms),
+    },
+    { merge: true },
+  );
 };
 
 export const fetchRecommendationSettings = async (
-  uid: string
+  uid: string,
 ): Promise<RecommendationSettings> => {
   const settingsRef = doc(db, "users", uid, "recommendationInfo", "settings");
   const snapshot = await getDoc(settingsRef);
@@ -261,7 +284,7 @@ export const fetchRecommendationSettings = async (
 
 export const saveRecommendationSettings = async (
   uid: string,
-  settings: RecommendationSettings
+  settings: RecommendationSettings,
 ) => {
   const settingsRef = doc(db, "users", uid, "recommendationInfo", "settings");
   return setDoc(settingsRef, settings, { merge: true });

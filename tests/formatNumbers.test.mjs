@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { formatHours, formatNumber, formatRelativeScore } from "../src/components/common/formatNumbers.ts";
+import {
+  formatHours,
+  formatNumber,
+  formatRelativeScore,
+} from "../src/components/common/formatNumbers.ts";
 
 test("hours and ratings use Polish decimals with at most one fractional digit", () => {
   assert.equal(formatHours(12.54), "12,5\u00a0godz.");

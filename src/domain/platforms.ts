@@ -65,6 +65,11 @@ export function supportedPlatforms(selected: readonly string[]): Set<string> {
   return supported;
 }
 
-export function matchesGamePlatforms(supported: ReadonlySet<string>, platforms?: string): boolean {
-  return normalizePlatforms((platforms ?? "").split(",")).some(name => supported.has(name));
+export function matchesGamePlatforms(
+  supported: ReadonlySet<string>,
+  platforms?: string,
+): boolean {
+  return normalizePlatforms((platforms ?? "").split(",")).some((name) =>
+    supported.has(name),
+  );
 }
