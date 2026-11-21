@@ -210,15 +210,14 @@ export const updateUserGamePlaytime = async (
   return setDoc(gameDoc, { playtime: hours }, { merge: true });
 };
 
-const profilePreferencesDocument = "preferences";
+const getProfilePreferencesRef = (uid: string) =>
+  doc(db, "users", uid, "profileInfo", "preferences");
 
 export const fetchUserProfilePreferences = async (
   uid: string
 ): Promise<UserProfilePreferences> => {
-  const profileRef = collection(db, `users/${uid}/profileInfo`);
-  const snapshot = await getDocs(profileRef);
-  const savedPreferences = snapshot.docs.find((entry) => entry.id === profilePreferencesDocument);
-  const data = (savedPreferences ?? snapshot.docs[0])?.data() ?? {};
+  const snapshot = await getDoc(getProfilePreferencesRef(uid));
+  const data = snapshot.data() ?? {};
   const [minYear, maxYear] = normalizePreferenceRange(data.yearStart, data.yearEnd, releaseYearBounds);
   const [minTime, maxTime] = normalizePreferenceRange(data.timeStart, data.timeEnd, gameLengthBounds);
 
@@ -245,10 +244,9 @@ export const saveUserProfilePreferences = async (
     timeEnd: number;
   }
 ) => {
-  const profileInfo = doc(db, `users/${uid}/profileInfo`, profilePreferencesDocument);
   const [yearStart, yearEnd] = normalizePreferenceRange(data.yearStart, data.yearEnd, releaseYearBounds);
   const [timeStart, timeEnd] = normalizePreferenceRange(data.timeStart, data.timeEnd, gameLengthBounds);
-  return setDoc(profileInfo, {
+  return setDoc(getProfilePreferencesRef(uid), {
     ...data,
     yearStart,
     yearEnd,
