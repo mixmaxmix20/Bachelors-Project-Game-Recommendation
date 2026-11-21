@@ -1,18 +1,17 @@
 import type { RankedRecommendation } from "../../types/recommendation";
+import { expectedPlaytime, isPositiveTime } from "../../domain/recommendations";
 import { formatHours, formatNumber, formatRelativeScore } from "../common/formatNumbers";
 
 interface RecommendationCardProps {
     rec: RankedRecommendation,
     index: number,
     maxScore: number,
-    avgPlaytimeRatio?: number,
+    avgPlaytimeRatio: number | null,
 }
 
 function RecommendationCard({rec, index, maxScore, avgPlaytimeRatio }: RecommendationCardProps) {
     const relativeScore = formatRelativeScore(rec.score, maxScore);
-    const expectedPlaytime = typeof rec.time === "number" && Number.isFinite(rec.time) && avgPlaytimeRatio !== undefined
-        ? rec.time * avgPlaytimeRatio
-        : NaN;
+    const hours = expectedPlaytime(rec.time, avgPlaytimeRatio);
 
     return(
         <div tabIndex={0} className="relative flex items-center w-full">
@@ -40,11 +39,11 @@ function RecommendationCard({rec, index, maxScore, avgPlaytimeRatio }: Recommend
                     <div className="text-sm text-ui-muted mb-1.25">{rec.releaseDate}</div>
                     <div className="text-sm text-ui-muted mb-1.25">{rec.platforms}</div>
                     <div className="text-sm text-ui-muted mb-1.25">
-                        Średni czas gry: {typeof rec.time === "number" && Number.isFinite(rec.time) ? formatHours(rec.time) : "Brak danych"}
+                        Średni czas gry: {isPositiveTime(rec.time) ? formatHours(rec.time) : "Brak danych"}
                     </div>
                     <div className="text-sm text-ui-muted mb-1.25">
                         Oczekiwany czas gry:{" "}
-                        {Number.isFinite(expectedPlaytime) ? formatHours(expectedPlaytime) : "Brak danych"}
+                        {hours !== null ? formatHours(hours) : "Brak danych"}
                     </div>
                     <div className="text-sm leading-normal w-full">
                         {rec.description}

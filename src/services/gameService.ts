@@ -1,6 +1,7 @@
 import {
   collection,
   doc,
+  documentId,
   getDocs,
   getDoc,
   setDoc,
@@ -21,6 +22,8 @@ import type {
   UserProfilePreferences,
 } from "../types/recommendation";
 import { normalizePlatforms } from "../domain/platforms";
+import { resolveRecommendationSettings } from "../domain/recommendations";
+import { loadRecommendationHistory } from "./recommendationHistory";
 import { gameLengthBounds, normalizePreferenceRange, releaseYearBounds } from "../domain/profileRanges";
 
 export interface NewGameData {
@@ -114,9 +117,21 @@ export const fetchRecommendationCollection = async (
 ): Promise<RecommendationCollectionEntry[]> => {
   const gamesRef = collection(db, `users/${uid}/games`);
   const snapshot = await getDocs(gamesRef);
-  // Keep stored IDs and missing fields as read for the recommendation formulas.
-  return snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+  return snapshot.docs.map((docSnap) => {
+    const { starRating, playtime } = docSnap.data();
+    return { id: docSnap.id, starRating, playtime };
+  });
 };
+
+export const fetchRecommendationHistory = (entries: readonly RecommendationCollectionEntry[]) =>
+  loadRecommendationHistory(entries, async (ids) => {
+    const games = collection(db, "gamesDatabase");
+    const snapshot = await getDocs(query(games, where(documentId(), "in", ids)));
+    return snapshot.docs.map((docSnap) => {
+      const { genres, themes, time } = docSnap.data();
+      return { id: docSnap.id, genres, themes, time };
+    });
+  });
 
 export const fetchRecommendationCandidates = async (
   minYear: number,
@@ -261,13 +276,7 @@ export const fetchRecommendationSettings = async (
 ): Promise<RecommendationSettings> => {
   const settingsRef = doc(db, "users", uid, "recommendationInfo", "settings");
   const snapshot = await getDoc(settingsRef);
-  const data = snapshot.data() || {};
-
-  return {
-    ratingWeight: data.ratingWeight ?? 0.2,
-    genreWeight: data.genreWeight ?? 0.5,
-    criticRatingWeight: data.criticRatingWeight ?? 0.5,
-  };
+  return resolveRecommendationSettings(snapshot.data());
 };
 
 export const saveRecommendationSettings = async (

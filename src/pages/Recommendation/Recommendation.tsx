@@ -3,15 +3,17 @@ import Navbar from "../../components/layout/Navbar";
 import RecommendationCard from "../../components/layout/RecommendationCard";
 import Button from "../../components/layout/Button";
 import { useAuth } from "../../contexts/AuthContext";
-import { inferPreferences, rankRecommendations } from "../../domain/recommendations";
+import { defaultRecommendationSettings, inferPreferences, rankRecommendations } from "../../domain/recommendations";
 import {
   fetchUserProfilePreferences,
   fetchRecommendationSettings,
   fetchRecommendationCollection,
+  fetchRecommendationHistory,
   fetchRecommendationCandidates,
   saveRecommendationSettings,
 } from "../../services/gameService";
 import type {
+  InferredPreferences,
   RecommendationCandidate,
   RecommendationCollectionEntry,
   RecommendationSettings,
@@ -22,14 +24,9 @@ interface RecommendationData {
   uid: string;
   profile: UserProfilePreferences;
   collection: RecommendationCollectionEntry[];
+  preferences: InferredPreferences;
   candidates: RecommendationCandidate[];
 }
-
-const initialSettings: RecommendationSettings = {
-  ratingWeight: 0.2,
-  genreWeight: 0.6,
-  criticRatingWeight: 0.5,
-};
 
 function Recommendation() {
   const { user } = useAuth();
@@ -37,7 +34,7 @@ function Recommendation() {
   const [loadedData, setLoadedData] = useState<RecommendationData | null>(null);
   const [userSettings, setUserSettings] = useState<{ uid: string; settings: RecommendationSettings } | null>(null);
   const data = loadedData?.uid === uid ? loadedData : null;
-  const settings = userSettings && userSettings.uid === uid ? userSettings.settings : initialSettings;
+  const settings = userSettings && userSettings.uid === uid ? userSettings.settings : defaultRecommendationSettings;
   const { ratingWeight: popularityWeight, genreWeight, criticRatingWeight } = settings;
 
   useEffect(() => {
@@ -55,8 +52,11 @@ function Recommendation() {
       const collection = await fetchRecommendationCollection(uid);
       if (!active) return;
 
-      const candidates = await fetchRecommendationCandidates(profile.minYear, profile.maxYear);
-      if (active) setLoadedData({ uid, profile, collection, candidates });
+      const [candidates, history] = await Promise.all([
+        fetchRecommendationCandidates(profile.minYear, profile.maxYear),
+        fetchRecommendationHistory(collection),
+      ]);
+      if (active) setLoadedData({ uid, profile, collection, candidates, preferences: inferPreferences(history) });
     };
 
     loadRecommendations().catch((error) => {
@@ -68,15 +68,12 @@ function Recommendation() {
     };
   }, [uid]);
 
-  const userPreferences = useMemo(
-    () => data ? inferPreferences(data.collection, data.candidates) : null,
-    [data]
-  );
+  const userPreferences = data?.preferences;
   const recGames = useMemo(
-    () => data && userPreferences
-      ? rankRecommendations(data.candidates, data.collection, data.profile, userPreferences, settings)
+    () => data
+      ? rankRecommendations(data.candidates, data.collection, data.profile, data.preferences, settings)
       : [],
-    [data, userPreferences, settings]
+    [data, settings]
   );
   const maxScore = Math.max(0, ...recGames.map((game) => game.score).filter(Number.isFinite));
 
@@ -154,7 +151,7 @@ function Recommendation() {
           <div className="text-center">
             <h4>Analiza czasowa:</h4>
             Stosunek twoich czasów gry do średniej globalnej:{" "}
-            {userPreferences?.avgPlaytimeRatio.toFixed(2)}
+            {userPreferences?.avgPlaytimeRatio?.toFixed(2) ?? "Brak danych"}
           </div>
           <div className="text-center">
             Twoja typowa długość rozgrywki:{" "}
@@ -164,7 +161,7 @@ function Recommendation() {
                 ? "Krótka"
                 : userPreferences?.timePreference === "medium"
                   ? "Średnia"
-                  : "Nieokreślona"}
+                  : "Brak danych"}
           </div>
           <div className="mt-4 flex justify-center">
             <Button isStandalone={true} onClickPar={handleSaveSettings}>Zapisz</Button>
@@ -173,7 +170,7 @@ function Recommendation() {
       </div>
       <div className="flex flex-col gap-5 w-full max-w-5xl px-4 xl:max-w-3/5 xl:px-0">
         {recGames.map((rec, index) => (
-          <RecommendationCard key={rec.id} rec={rec} index={index} maxScore={maxScore} avgPlaytimeRatio={userPreferences?.avgPlaytimeRatio}></RecommendationCard>
+          <RecommendationCard key={rec.id} rec={rec} index={index} maxScore={maxScore} avgPlaytimeRatio={userPreferences?.avgPlaytimeRatio ?? null} />
         ))}
       </div>
     </div>

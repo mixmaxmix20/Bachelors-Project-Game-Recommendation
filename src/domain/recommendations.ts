@@ -4,6 +4,7 @@ import type {
   RankedRecommendation,
   RecommendationCandidate,
   RecommendationCollectionEntry,
+  RecommendationHistoryEntry,
   RecommendationSettings,
   UserProfilePreferences,
 } from "../types/recommendation";
@@ -12,39 +13,63 @@ function splitString(value?: string): string[] {
   return (value || "").split(",").map((entry) => entry.trim()).filter(Boolean);
 }
 
+export const defaultRecommendationSettings: RecommendationSettings = {
+  ratingWeight: 0.2,
+  genreWeight: 0.5,
+  criticRatingWeight: 0.5,
+};
+
+export function resolveRecommendationSettings(data?: Partial<RecommendationSettings>): RecommendationSettings {
+  return {
+    ratingWeight: data?.ratingWeight ?? defaultRecommendationSettings.ratingWeight,
+    genreWeight: data?.genreWeight ?? defaultRecommendationSettings.genreWeight,
+    criticRatingWeight: data?.criticRatingWeight ?? defaultRecommendationSettings.criticRatingWeight,
+  };
+}
+
+export function isStarRating(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 5;
+}
+
+export function isPositiveTime(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+export function expectedPlaytime(time: number | null | undefined, ratio: number | null): number | null {
+  return isPositiveTime(time) ? time * (ratio ?? 1) : null;
+}
+
 export function inferPreferences(
-  collection: readonly RecommendationCollectionEntry[],
-  candidates: readonly RecommendationCandidate[]
+  history: readonly RecommendationHistoryEntry[]
 ): InferredPreferences {
   const genreWeights: Record<string, number> = {};
   const themeWeights: Record<string, number> = {};
   let totalWeight = 0;
+  let ratedGamesCount = 0;
   const ratios: number[] = [];
 
-  for (const entry of collection) {
-    const game = candidates.find((candidate) => candidate.id.toString() === entry.id);
-    if (!game || !entry.playtime) continue;
+  for (const entry of history) {
+    if (isPositiveTime(entry.playtime) && isPositiveTime(entry.time)) {
+      ratios.push(entry.playtime / entry.time);
+    }
 
-    ratios.push(entry.playtime / Number(game.time));
+    if (!isStarRating(entry.starRating)) continue;
+    const genres = splitString(entry.genres).filter((genre) => genre !== "-");
+    const themes = splitString(entry.themes).filter((theme) => theme !== "-");
+    if (!genres.length && !themes.length) continue;
 
-    // Preserve the distinction between a missing rating and an explicit zero.
-    const weight = (Number(entry.starRating) - 1) / 4;
+    ratedGamesCount++;
+    const weight = (entry.starRating - 1) / 4;
     totalWeight += weight;
 
-    for (const genre of splitString(game.genres)) {
+    for (const genre of genres) {
       genreWeights[genre] = (genreWeights[genre] || 0) + weight;
     }
 
-    for (const theme of splitString(game.themes)) {
+    for (const theme of themes) {
       themeWeights[theme] = (themeWeights[theme] || 0) + weight;
     }
   }
-
-  const avgPlaytimeRatio = ratios.reduce((sum, ratio) => sum + ratio, 0) / ratios.length;
-  const variance =
-    ratios.reduce((sum, ratio) => sum + (ratio - avgPlaytimeRatio) ** 2, 0) / ratios.length;
-  const zScore = (avgPlaytimeRatio - 1.0) / Math.sqrt(variance);
-  const timePreference = zScore < -0.5 ? "short" : zScore > 0.5 ? "long" : "medium";
 
   if (totalWeight > 0) {
     for (const genre of Object.keys(genreWeights)) {
@@ -55,7 +80,16 @@ export function inferPreferences(
     }
   }
 
-  return { genreWeights, themeWeights, timePreference, avgPlaytimeRatio };
+  if (!ratios.length) {
+    return { genreWeights, themeWeights, ratedGamesCount, timePreference: null, avgPlaytimeRatio: null };
+  }
+
+  const avgPlaytimeRatio = ratios.reduce((sum, ratio) => sum + ratio, 0) / ratios.length;
+  const variance = ratios.reduce((sum, ratio) => sum + (ratio - avgPlaytimeRatio) ** 2, 0) / ratios.length;
+  const threshold = 0.5 * Math.sqrt(variance);
+  const deviation = avgPlaytimeRatio - 1;
+  const timePreference = deviation < -threshold ? "short" : deviation > threshold ? "long" : "medium";
+  return { genreWeights, themeWeights, ratedGamesCount, timePreference, avgPlaytimeRatio };
 }
 
 function calculateTimeEngagement(
@@ -63,26 +97,27 @@ function calculateTimeEngagement(
   prefs: InferredPreferences,
   profile: UserProfilePreferences
 ): number {
-  const expectedPlaytime = Number(game.time) * prefs.avgPlaytimeRatio;
+  const hours = expectedPlaytime(game.time, prefs.avgPlaytimeRatio);
+  if (hours === null) return 0;
 
   let rangeMatch;
-  if (expectedPlaytime >= profile.minTime && expectedPlaytime <= profile.maxTime) {
+  if (hours >= profile.minTime && hours <= profile.maxTime) {
     rangeMatch = 1;
   } else {
     const distance =
-      expectedPlaytime < profile.minTime
-        ? profile.minTime - expectedPlaytime
-        : expectedPlaytime - profile.maxTime;
+      hours < profile.minTime
+        ? profile.minTime - hours
+        : hours - profile.maxTime;
     const penalty = 1 - Math.exp(-0.2 * Math.max(0, distance - 5));
     rangeMatch = Math.max(0, 1 - penalty);
   }
 
   let preferenceBonus = 0;
-  if (prefs.timePreference === "long" && expectedPlaytime >= 50) {
+  if (prefs.timePreference === "long" && hours >= 50) {
     preferenceBonus = 1;
-  } else if (prefs.timePreference === "medium" && expectedPlaytime > 15 && expectedPlaytime < 50) {
+  } else if (prefs.timePreference === "medium" && hours > 15 && hours < 50) {
     preferenceBonus = 1;
-  } else if (prefs.timePreference === "short" && expectedPlaytime <= 15) {
+  } else if (prefs.timePreference === "short" && hours <= 15) {
     preferenceBonus = 1;
   }
 
@@ -92,7 +127,6 @@ function calculateTimeEngagement(
 function calculateGameScore(
   game: RecommendationCandidate,
   prefs: InferredPreferences,
-  ratedGamesCount: number,
   profile: UserProfilePreferences,
   settings: RecommendationSettings
 ): number {
@@ -108,7 +142,7 @@ function calculateGameScore(
   const popularityScore = combinedRating * ratingWeight;
 
   let personalizationScore = 0;
-  if (ratedGamesCount > 0) {
+  if (prefs.ratedGamesCount > 0) {
     let genreScore = 0;
     let themeScore = 0;
 
@@ -137,11 +171,12 @@ export function rankRecommendations(
   settings: RecommendationSettings
 ): RankedRecommendation[] {
   const supported = supportedPlatforms(profile.platforms);
+  const ownedIds = new Set(collection.map((entry) => entry.id));
   return candidates
-    .filter((game) => !collection.some((entry) => entry.id === game.id.toString()))
+    .filter((game) => !ownedIds.has(game.id.toString()))
     .map((game) => ({
       ...game,
-      score: calculateGameScore(game, prefs, collection.length, profile, settings),
+      score: calculateGameScore(game, prefs, profile, settings),
     }))
     .filter((game) => {
       const matchesYear = game.releaseDate >= profile.minYear && game.releaseDate <= profile.maxYear;

@@ -11,8 +11,9 @@ export interface UserProfilePreferences {
 export interface InferredPreferences {
   genreWeights: Record<string, number>;
   themeWeights: Record<string, number>;
-  timePreference: "short" | "medium" | "long";
-  avgPlaytimeRatio: number;
+  ratedGamesCount: number;
+  timePreference: "short" | "medium" | "long" | null;
+  avgPlaytimeRatio: number | null;
 }
 
 export interface RecommendationSettings {
@@ -22,9 +23,15 @@ export interface RecommendationSettings {
 }
 
 export interface RecommendationCollectionEntry {
-  id: string | number;
+  id: string;
   starRating?: number | null;
   playtime?: number | null;
+}
+
+export interface RecommendationHistoryEntry extends RecommendationCollectionEntry {
+  genres?: string;
+  themes?: string;
+  time?: number | null;
 }
 
 export interface RecommendationCandidate {
