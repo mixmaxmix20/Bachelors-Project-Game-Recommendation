@@ -1,6 +1,6 @@
 import Navbar from "../../components/layout/Navbar";
 import GameCard from "../../components/layout/GameCard";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import type { Game } from "../../types/game";
 import {
@@ -15,10 +15,21 @@ import {
 function Collection() {
   const { user } = useAuth();
   const uid = user?.uid;
-  const [allGames, setAllGames] = useState<Game[]>([]);
+  const [allGames, setAllGames] = useState<Game[] | null>(null);
+  const loadingCatalog = useRef(false);
   const [games, setGames] = useState<Game[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [searchResults, setSearchResults] = useState<Game[]>([]);
+  const normalizedQuery = searchQuery.toLowerCase();
+  const searchResults: Game[] = [];
+  if (allGames && normalizedQuery.trim()) {
+    const ownedIds = new Set(games.map((game) => game.id));
+    for (const game of allGames) {
+      if (game.name.toLowerCase().includes(normalizedQuery) && !ownedIds.has(game.id)) {
+        searchResults.push(game);
+        if (searchResults.length === 10) break;
+      }
+    }
+  }
 
   useEffect(() => {
     if (!uid) return;
@@ -39,25 +50,16 @@ function Collection() {
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
-    if (!query.trim()) {
-      setSearchResults([]);
-      return;
-    }
+    if (!query.trim() || allGames !== null || loadingCatalog.current) return;
 
-    let currentAllGames = allGames;
-    if (currentAllGames.length === 0) {
-      currentAllGames = await fetchGamesDatabase();
-      setAllGames(currentAllGames);
+    loadingCatalog.current = true;
+    try {
+      setAllGames(await fetchGamesDatabase());
+    } catch (error) {
+      console.error("Nie udało się wczytać katalogu gier", error);
+    } finally {
+      loadingCatalog.current = false;
     }
-
-    const filteredGames = currentAllGames
-      .filter(
-        (game) =>
-          game.name.toLowerCase().includes(query.toLowerCase()) &&
-          !games.some((g) => g.id === game.id)
-      )
-      .slice(0, 10);
-    setSearchResults(filteredGames);
   };
 
   const addGame = async (game: Game) => {
@@ -65,7 +67,6 @@ function Collection() {
       setGames([game, ...games]);
     }
     setSearchQuery("");
-    setSearchResults([]);
 
     if (!uid) return;
     try {

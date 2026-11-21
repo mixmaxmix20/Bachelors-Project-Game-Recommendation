@@ -121,8 +121,8 @@ function Profile() {
 
       setReleaseYears([data.minYear, data.maxYear]);
       setGameLength([data.minTime, data.maxTime]);
-      setGenres(data.genres);
-      setThemes(data.themes);
+      setGenres([...new Set(data.genres)]);
+      setThemes([...new Set(data.themes)]);
       setPlatforms(data.platforms);
       setLoadedUid(uid);
     }).catch((error) => {
@@ -213,8 +213,8 @@ function Profile() {
             <details tabIndex={0} className="collapse collapse-plus max-w-full mb-5">
               <summary className="collapse-title">Wybrane gatunki</summary>
               <div className="collapse-content flex flex-wrap gap-2">
-                {genres.map((g, index) => (
-                  <div key={index} className="join">
+                {genres.map((g) => (
+                  <div key={g} className="join">
                     <span className="btn btn-sm join-item bg-[#1f2326] text-white border-neutral-700 pointer-events-none font-normal text-base">
                       {availableGenres.find((gen) => gen.en === g)?.pl}
                     </span>
@@ -237,8 +237,8 @@ function Profile() {
               className="select h-12 w-full lg:max-w-125 grow text-lg rounded-lg border border-ui-border ui-focus pl-2 self-center bg-[#1f2326] text-white mb-5"
             >
               <option disabled={true} value="">Wybierz gatunek</option>
-              {availableGenres.filter((option) => !genres.includes(option.en)).map((g, index) => (
-                <option key={index} value={g.pl}>
+              {availableGenres.filter((option) => !genres.includes(option.en)).map((g) => (
+                <option key={g.en} value={g.pl}>
                   {g.pl}
                 </option>
               ))}
@@ -249,8 +249,8 @@ function Profile() {
             <details tabIndex={0} className="collapse collapse-plus max-w-full mb-5">
               <summary className="collapse-title">Wybrane motywy</summary>
               <div className="collapse-content flex flex-wrap gap-2">
-                {themes.map((g, index) => (
-                  <div key={index} className="join">
+                {themes.map((g) => (
+                  <div key={g} className="join">
                     <span className="btn btn-sm join-item bg-[#1f2326] text-white border-neutral-700 pointer-events-none font-normal text-base">
                       {availableThemes.find((gen) => gen.en === g)?.pl}
                     </span>
@@ -273,8 +273,8 @@ function Profile() {
               className="select h-12 w-full lg:max-w-125 grow text-lg rounded-lg border border-ui-border ui-focus pl-2 self-center bg-[#1f2326] text-white mb-5"
             >
               <option disabled={true} value="">Wybierz motyw</option>
-              {availableThemes.filter((option) => !themes.includes(option.en)).map((g, index) => (
-                <option key={index} value={g.pl}>
+              {availableThemes.filter((option) => !themes.includes(option.en)).map((g) => (
+                <option key={g.en} value={g.pl}>
                   {g.pl}
                 </option>
               ))}
@@ -285,8 +285,8 @@ function Profile() {
             <details tabIndex={0} className="collapse collapse-plus max-w-full mb-5">
               <summary className="collapse-title">Wybrane platformy</summary>
               <div className="collapse-content flex flex-wrap gap-2">
-                {platforms.map((g, index) => (
-                  <div key={index} className="join">
+                {platforms.map((g) => (
+                  <div key={g} className="join">
                     <span className="btn btn-sm join-item bg-[#1f2326] text-white border-neutral-700 pointer-events-none font-normal text-base">
                       {g}
                     </span>
@@ -309,8 +309,8 @@ function Profile() {
               className="select h-12 w-full lg:max-w-125 grow text-lg rounded-lg border border-ui-border ui-focus pl-2 self-center bg-[#1f2326] text-white"
             >
               <option disabled={true} value="">Wybierz platformę</option>
-              {availablePlatforms.filter((option) => !platforms.includes(option)).map((g, index) => (
-                <option key={index} value={g}>
+              {availablePlatforms.filter((option) => !platforms.includes(option)).map((g) => (
+                <option key={g} value={g}>
                   {g}
                 </option>
               ))}
