@@ -26,28 +26,8 @@ import { resolveRecommendationSettings } from "../domain/recommendations";
 import { loadRecommendationHistory } from "./recommendationHistory";
 import { gameLengthBounds, normalizePreferenceRange, releaseYearBounds } from "../domain/profileRanges";
 
-export interface NewGameData {
-  name: string;
-  coverId: string;
-  platforms: string;
-  genres: string;
-  themes: string;
-  desc: string;
-  rating: number | null;
-  time: number | null;
-  year: number | null;
-}
-
 let memoryGamesCache: Game[] | null = null;
 let gamesFetchPromise: Promise<Game[]> | null = null;
-
-export const addGameToDatabase = async (id: string, data: NewGameData) => {
-  const gamesDoc = doc(db, "gamesDatabase", id);
-  memoryGamesCache = null;
-  gamesFetchPromise = null;
-  sessionStorage.removeItem("srg_games_cache");
-  return setDoc(gamesDoc, data);
-};
 
 export const fetchGamesDatabase = async (): Promise<Game[]> => {
   if (memoryGamesCache && memoryGamesCache.length > 0) {

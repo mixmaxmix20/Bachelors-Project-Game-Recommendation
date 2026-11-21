@@ -8,7 +8,6 @@ import Collection from "./pages/Collection/Collection";
 import Recommendation from "./pages/Recommendation/Recommendation";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/common/ProtectedRoute";
-import AddGame from "./pages/AddGame/AddGame";
 
 function App() {
   return (
@@ -19,7 +18,6 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/addGame" element={<AddGame />} />
             <Route
               path="/profile"
               element={
