@@ -143,6 +143,7 @@ test("keeps exact collection ID matching and applies all explicit filters and th
     game(7, { themes: "Horror" }),
     game(8),
     game(9),
+    game(10, { platforms: "", genres: "", themes: "" }),
   ];
   const collection = [{ id: "8" }, { id: "09" }];
   const inferred = inferPreferences([]);
@@ -160,16 +161,25 @@ test("keeps exact collection ID matching and applies all explicit filters and th
     [1, 2, 9],
   );
 
-  for (const filter of ["platforms", "genres", "themes"]) {
+  const optionalFilters = [
+    { selection: { platforms: [] }, expected: [1, 2, 5, 9] },
+    { selection: { genres: [] }, expected: [1, 2, 6, 9] },
+    { selection: { themes: [] }, expected: [1, 2, 7, 9] },
+    {
+      selection: { platforms: [], genres: [], themes: [] },
+      expected: [1, 2, 5, 6, 7, 9, 10],
+    },
+  ];
+  for (const { selection, expected } of optionalFilters) {
     assert.deepEqual(
       rankRecommendations(
         games,
         collection,
-        { ...profile, [filter]: [] },
+        { ...profile, ...selection },
         inferred,
         explicitWeights,
-      ),
-      [],
+      ).map(({ id }) => id),
+      expected,
     );
   }
 });

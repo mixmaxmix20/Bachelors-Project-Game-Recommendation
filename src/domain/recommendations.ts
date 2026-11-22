@@ -219,15 +219,17 @@ export function rankRecommendations(
       const matchesYear =
         game.releaseDate >= profile.minYear &&
         game.releaseDate <= profile.maxYear;
-      const matchesPlatform = matchesGamePlatforms(supported, game.platforms);
+      const matchesPlatform =
+        supported.size === 0 || matchesGamePlatforms(supported, game.platforms);
       const genres = splitString(game.genres);
       const themes = splitString(game.themes);
-      const matchesGenre = profile.genres.some((genre) =>
-        genres.includes(genre),
-      );
-      const matchesTheme = profile.themes.some(
-        (theme) => themes.includes(theme) || themes.includes("-"),
-      );
+      const matchesGenre =
+        profile.genres.length === 0 ||
+        profile.genres.some((genre) => genres.includes(genre));
+      const matchesTheme =
+        profile.themes.length === 0 ||
+        themes.includes("-") ||
+        profile.themes.some((theme) => themes.includes(theme));
       return matchesYear && matchesPlatform && matchesGenre && matchesTheme;
     })
     .sort((a, b) => b.score - a.score)

@@ -37,12 +37,9 @@ function Collection() {
   const searchInput = useRef<HTMLInputElement>(null);
   const isAdding = addFeedback?.kind === "pending";
   const normalizedQuery = searchQuery.toLowerCase();
+  const hasQuery = Boolean(normalizedQuery.trim());
   const searchResults: Game[] = [];
-  if (
-    catalog.status === "ready" &&
-    collectionStatus === "ready" &&
-    normalizedQuery.trim()
-  ) {
+  if (catalog.status === "ready" && collectionStatus === "ready" && hasQuery) {
     const ownedIds = new Set(games.map((game) => game.id));
     for (const game of catalog.games) {
       if (
@@ -60,10 +57,8 @@ function Collection() {
     : -1;
   const activeGame = searchResults[activeIndex];
   let searchStatus = "";
-  if (isSearchOpen && normalizedQuery.trim() && !isAdding) {
-    if (collectionStatus === "loading") searchStatus = "Wczytywanie kolekcji…";
-    else if (catalog.status === "loading")
-      searchStatus = "Wczytywanie katalogu…";
+  if (isSearchOpen && hasQuery && !isAdding && collectionStatus !== "error") {
+    if (catalog.status === "loading") searchStatus = "Wczytywanie katalogu…";
     else if (
       collectionStatus === "ready" &&
       catalog.status === "ready" &&
@@ -73,19 +68,16 @@ function Collection() {
     }
   }
   const searchFeedback =
-    collectionStatus === "error"
+    collectionStatus !== "error" &&
+    isSearchOpen &&
+    hasQuery &&
+    catalog.status === "error"
       ? {
           kind: "error" as const,
           message:
-            "Nie udało się wczytać kolekcji. Odśwież stronę, aby spróbować ponownie.",
+            "Nie udało się wczytać katalogu. Zmień zapytanie, aby spróbować ponownie.",
         }
-      : isSearchOpen && normalizedQuery.trim() && catalog.status === "error"
-        ? {
-            kind: "error" as const,
-            message:
-              "Nie udało się wczytać katalogu. Zmień zapytanie, aby spróbować ponownie.",
-          }
-        : addFeedback;
+      : addFeedback;
 
   useEffect(() => {
     if (!uid) return;
@@ -258,12 +250,12 @@ function Collection() {
           role="combobox"
           autoComplete="off"
           aria-autocomplete="list"
-          aria-controls={searchResultsId}
+          aria-controls={showResults ? searchResultsId : undefined}
           aria-expanded={showResults}
           aria-activedescendant={
             activeGame ? `${searchResultsId}-${activeGame.id}` : undefined
           }
-          aria-describedby="collection-search-hint collection-search-feedback"
+          aria-describedby="collection-search-status collection-search-feedback"
           value={searchQuery}
           readOnly={isAdding}
           onChange={(event) => handleSearch(event.currentTarget.value)}
@@ -273,21 +265,24 @@ function Collection() {
           onKeyDown={handleSearchKeyDown}
           className="text-lg sm:text-2xl w-full h-12 p-2 border border-ui-border ui-focus rounded bg-transparent"
         />
-        <p role="status" className="text-sm text-ui-muted empty:sr-only">
+        <p
+          id="collection-search-status"
+          role="status"
+          className="text-sm text-ui-muted empty:sr-only"
+        >
           {searchStatus}
         </p>
         <div id="collection-search-feedback">
           <ActionFeedback feedback={searchFeedback} />
         </div>
-        <ul
-          id={searchResultsId}
-          role="listbox"
-          aria-label="Wyniki wyszukiwania gier"
-          hidden={!showResults}
-          className="absolute top-full mt-1.5 left-4 right-4 bg-black border border-ui-border rounded max-h-54 overflow-y-auto z-10"
-        >
-          {showResults &&
-            searchResults.map((game) => (
+        {showResults && (
+          <ul
+            id={searchResultsId}
+            role="listbox"
+            aria-label="Wyniki wyszukiwania gier"
+            className="absolute top-full mt-1.5 left-4 right-4 bg-black border border-ui-border rounded max-h-54 overflow-y-auto z-10"
+          >
+            {searchResults.map((game) => (
               <li
                 key={game.id}
                 id={`${searchResultsId}-${game.id}`}
@@ -306,22 +301,39 @@ function Collection() {
                 <span>{game.name}</span>
               </li>
             ))}
-        </ul>
+          </ul>
+        )}
       </div>
       {/*Game cards*/}
-      <div className="grid grid-cols-2 @min-[40rem]/app-content:grid-cols-3 @min-[48rem]/app-content:grid-cols-4 @min-[64rem]/app-content:grid-cols-5 @min-[80rem]/app-content:grid-cols-6 gap-4 w-full max-w-7xl px-4">
-        {games.map((game) => (
-          <GameCard
-            key={game.id}
-            game={game}
-            deleteGame={deleteGame}
-            saveChanges={saveChanges}
-          />
-        ))}
-        {collectionStatus === "ready" && games.length === 0 && (
-          <p className="text-ui-muted mt-12 text-center text-lg">
-            Twoja kolekcja jest pusta! Wyszukaj i dodaj gry powyżej.
-          </p>
+      <div className="w-full max-w-7xl px-4">
+        <p
+          role="status"
+          className="mt-12 text-center text-lg text-ui-muted empty:sr-only"
+        >
+          {collectionStatus === "loading"
+            ? "Wczytywanie kolekcji…"
+            : collectionStatus === "ready" && games.length === 0
+              ? "Twoja kolekcja jest pusta. Wyszukaj i dodaj grę powyżej."
+              : null}
+        </p>
+        <p
+          role="alert"
+          className="mt-12 text-center text-lg text-red-300 empty:sr-only"
+        >
+          {collectionStatus === "error" &&
+            "Nie udało się wczytać kolekcji. Odśwież stronę, aby spróbować ponownie."}
+        </p>
+        {collectionStatus === "ready" && games.length > 0 && (
+          <div className="grid grid-cols-2 @min-[40rem]/app-content:grid-cols-3 @min-[48rem]/app-content:grid-cols-4 @min-[64rem]/app-content:grid-cols-5 @min-[80rem]/app-content:grid-cols-6 gap-4">
+            {games.map((game) => (
+              <GameCard
+                key={game.id}
+                game={game}
+                deleteGame={deleteGame}
+                saveChanges={saveChanges}
+              />
+            ))}
+          </div>
         )}
       </div>
     </div>

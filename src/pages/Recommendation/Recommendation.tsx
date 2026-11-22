@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { Link } from "react-router-dom";
 import RecommendationCard from "../../components/layout/RecommendationCard";
 import Button from "../../components/layout/Button";
 import PageHeading from "../../components/layout/PageHeading";
@@ -58,7 +59,8 @@ function Recommendation() {
   const criticPercent = Math.round(criticRatingWeight * 100);
   const { feedback, isSaving, markEdited, save } =
     useSettingsSave("recommendations");
-  const [loadFailed, setLoadFailed] = useState(false);
+  const [loadFailedUid, setLoadFailedUid] = useState<string | null>(null);
+  const loadFailed = loadFailedUid === uid;
   const settingsReady = Boolean(uid && userSettings?.uid === uid);
 
   useEffect(() => {
@@ -92,7 +94,7 @@ function Recommendation() {
 
     loadRecommendations().catch((error) => {
       if (active) {
-        setLoadFailed(true);
+        setLoadFailedUid(uid);
         console.error("Nie udało się wczytać danych rekomendacji", error);
       }
     });
@@ -230,21 +232,29 @@ function Recommendation() {
             >
               Zapisz
             </Button>
-            <ActionFeedback
-              feedback={
-                loadFailed && !settingsReady
-                  ? {
-                      kind: "error",
-                      message:
-                        "Nie udało się wczytać ustawień. Odśwież stronę i spróbuj ponownie.",
-                    }
-                  : feedback
-              }
-            />
+            <ActionFeedback feedback={feedback} />
           </div>
         </div>
       </details>
       <div className="flex flex-col gap-5 w-full max-w-5xl px-4 @min-[80rem]/app-content:max-w-3/5 @min-[80rem]/app-content:px-0">
+        <p role="status" className="text-center text-ui-muted empty:sr-only">
+          {!data && !loadFailed && "Wczytywanie rekomendacji…"}
+          {data && recGames.length === 0 && (
+            <>
+              Brak gier pasujących do bieżących preferencji.{" "}
+              <Link
+                to={protectedPages.profile.path}
+                className="underline underline-offset-4 ui-focus"
+              >
+                Zmień preferencje w profilu
+              </Link>
+            </>
+          )}
+        </p>
+        <p role="alert" className="text-center text-red-300 empty:sr-only">
+          {loadFailed &&
+            "Nie udało się wczytać rekomendacji. Odśwież stronę, aby spróbować ponownie."}
+        </p>
         {recGames.map((rec, index) => (
           <RecommendationCard
             key={rec.id}
