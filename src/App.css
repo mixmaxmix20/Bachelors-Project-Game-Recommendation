@@ -12,3 +12,12 @@
     outline-offset: 2px;
   }
 }
+
+/* Allow Tab to enter the panel immediately after its summary is activated. */
+details.collapse::details-content {
+  transition: none;
+}
+
+details.collapse:has(> summary:focus-visible) {
+  outline-color: var(--color-ui-muted);
+}
