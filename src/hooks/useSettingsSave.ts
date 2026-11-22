@@ -1,9 +1,6 @@
 import { useRef, useState, useSyncExternalStore } from "react";
 import type { ActionMessage } from "../components/common/ActionFeedback";
-import {
-  describeOperationError,
-  type Operation,
-} from "../services/operationError";
+import { describeOperationError } from "../services/operationError";
 
 const successMessages = {
   profile: "Zapisano preferencje profilu",
@@ -19,7 +16,7 @@ function subscribeToConnection(onChange: () => void) {
   };
 }
 
-export function useSettingsSave(operation: Exclude<Operation, "register">) {
+export function useSettingsSave(operation: keyof typeof successMessages) {
   const inFlight = useRef<{ edited: boolean } | null>(null);
   const [feedback, setFeedback] = useState<ActionMessage | null>(null);
   const online = useSyncExternalStore(

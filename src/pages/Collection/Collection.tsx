@@ -11,9 +11,9 @@ import {
   fetchUserGames,
   addGameToUserCollection,
   deleteGameFromUserCollection,
-  updateUserGameRating,
-  updateUserGamePlaytime,
+  updateUserGame,
 } from "../../services/gameService";
+import { describeOperationError } from "../../services/operationError";
 
 type Catalog =
   { status: "idle" | "loading" | "error" } | { status: "ready"; games: Game[] };
@@ -112,6 +112,7 @@ function Collection() {
   }
 
   async function handleSearch(query: string) {
+    if (addingGame.current) return;
     setSearchQuery(query);
     setIsSearchOpen(true);
     setActiveGameId(null);
@@ -181,57 +182,42 @@ function Collection() {
     addingGame.current = true;
     setAddFeedback({ kind: "pending", message: "Dodawanie gry…" });
     try {
-      await addGameToUserCollection(uid, game);
-      setGames((previous) => [game, ...previous]);
+      const savedGame = await addGameToUserCollection(uid, game);
+      setGames((previous) => [savedGame, ...previous]);
       setSearchQuery("");
       closeSearchResults();
       setAddFeedback({ kind: "success", message: "Dodano grę do kolekcji." });
     } catch (error) {
-      console.error("Błąd dodawania gry", error);
       setAddFeedback({
         kind: "error",
-        message: "Nie udało się dodać gry. Spróbuj ponownie.",
+        message: describeOperationError(error, "collection-add").message,
       });
     } finally {
       addingGame.current = false;
     }
   }
 
-  const deleteGame = async (game: Game) => {
-    setGames((prevGames) => prevGames.filter((g) => g.id !== game.id));
-    if (!uid) return;
+  async function deleteGame(gameId: number) {
+    if (!uid) throw new Error("Brak aktywnej sesji");
 
-    try {
-      await deleteGameFromUserCollection(uid, game);
-    } catch (error) {
-      console.error("Błąd usuwania gry");
-      alert("Nie udało się usunąć gry");
-    }
-  };
+    await deleteGameFromUserCollection(uid, gameId);
+    setGames((previous) => previous.filter((game) => game.id !== gameId));
+  }
 
-  const saveChanges = async (
+  async function saveChanges(
     gameId: number,
-    starRating: number,
+    starRating: number | undefined,
     hours: number,
-  ) => {
-    const previousRating = games.find((g) => g.id === gameId)?.starRating || 0;
+  ) {
+    if (!uid) throw new Error("Brak aktywnej sesji");
 
-    setGames((prevGames) =>
-      prevGames.map((game) =>
-        game.id === gameId
-          ? { ...game, starRating: starRating, playtime: hours }
-          : game,
+    const changes = await updateUserGame(uid, gameId, starRating, hours);
+    setGames((previous) =>
+      previous.map((game) =>
+        game.id === gameId ? { ...game, ...changes } : game,
       ),
     );
-
-    if (!uid) return;
-    try {
-      await updateUserGameRating(uid, gameId, starRating, previousRating);
-      await updateUserGamePlaytime(uid, gameId, hours);
-    } catch (error) {
-      console.error("Błąd edycji danych.");
-    }
-  };
+  }
 
   return (
     <div className="flex flex-col items-center justify-start pt-2 sm:pt-5 min-h-screen bg-[#121416] text-[#ddddff] pb-24 pointer-fine:pb-8 pointer-fine:pl-16">

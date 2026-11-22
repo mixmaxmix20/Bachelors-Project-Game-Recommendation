@@ -1,4 +1,4 @@
-export type Operation = "register" | "profile" | "recommendations";
+type Operation = keyof typeof failureMessages;
 
 interface OperationError {
   field?: "email" | "password";
@@ -9,6 +9,9 @@ const failureMessages = {
   register: "Nie udało się utworzyć konta.",
   profile: "Nie udało się zapisać preferencji profilu.",
   recommendations: "Nie udało się zapisać ustawień rekomendacji.",
+  "collection-add": "Nie udało się dodać gry do kolekcji.",
+  "collection-update": "Nie udało się zapisać zmian w grze.",
+  "collection-delete": "Nie udało się usunąć gry z kolekcji.",
 };
 
 export function describeOperationError(
@@ -33,6 +36,10 @@ export function describeOperationError(
       case "auth/password-does-not-meet-requirements":
         return { field: "password", message: "Wybierz silniejsze hasło." };
     }
+  }
+
+  if (operation === "collection-update" && code === "not-found") {
+    return { message: "Nie znaleziono danych gry. Odśwież kolekcję." };
   }
 
   switch (code) {

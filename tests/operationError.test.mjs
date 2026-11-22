@@ -56,3 +56,10 @@ test("unrecognized errors identify the failed action without guessing the cause"
     }
   }
 });
+
+test("a missing collection entry tells the user to refresh before retrying", () => {
+  assert.match(
+    describeOperationError({ code: "not-found" }, "collection-update").message,
+    /Odśwież kolekcję/,
+  );
+});
