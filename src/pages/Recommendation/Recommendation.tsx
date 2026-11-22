@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from "react";
-import Navbar from "../../components/layout/Navbar";
 import RecommendationCard from "../../components/layout/RecommendationCard";
 import Button from "../../components/layout/Button";
 import ActionFeedback from "../../components/common/ActionFeedback";
@@ -132,8 +131,7 @@ function Recommendation() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-start pt-6 sm:pt-10 min-h-screen w-full p-5 box-border bg-[#121416] text-[#ddddff] pb-24 pointer-fine:pb-8">
-      <Navbar />
+    <div className="flex flex-col items-center justify-start pt-6 sm:pt-10 min-h-full w-full p-5 box-border bg-[#121416] text-[#ddddff] pb-8">
       <details className="collapse collapse-arrow w-full max-w-xl md:max-w-2xl my-4 bg-[#1f2326] rounded-lg">
         <summary className="collapse-title font-semibold">
           Ustawienia rekomendacji
@@ -243,7 +241,7 @@ function Recommendation() {
           </div>
         </div>
       </details>
-      <div className="flex flex-col gap-5 w-full max-w-5xl px-4 xl:max-w-3/5 xl:px-0">
+      <div className="flex flex-col gap-5 w-full max-w-5xl px-4 @min-[80rem]/app-content:max-w-3/5 @min-[80rem]/app-content:px-0">
         {recGames.map((rec, index) => (
           <RecommendationCard
             key={rec.id}

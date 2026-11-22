@@ -1,4 +1,3 @@
-import Navbar from "../../components/layout/Navbar";
 import GameCard from "../../components/layout/GameCard";
 import ActionFeedback, {
   type ActionMessage,
@@ -243,8 +242,7 @@ function Collection() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-start pt-2 sm:pt-5 min-h-screen bg-[#121416] text-[#ddddff] pb-24 pointer-fine:pb-8 pointer-fine:pl-16">
-      <Navbar />
+    <div className="flex flex-col items-center justify-start pt-2 sm:pt-5 min-h-full bg-[#121416] text-[#ddddff] pb-8">
       <div className="flex flex-col items-center justify-center text-6xl font-bold"></div>
       {/*Search bar*/}
       <div className="relative mb-4 mt-5 w-full max-w-xl px-4">
@@ -309,7 +307,7 @@ function Collection() {
         </ul>
       </div>
       {/*Game cards*/}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 w-full max-w-7xl px-4">
+      <div className="grid grid-cols-2 @min-[40rem]/app-content:grid-cols-3 @min-[48rem]/app-content:grid-cols-4 @min-[64rem]/app-content:grid-cols-5 @min-[80rem]/app-content:grid-cols-6 gap-4 w-full max-w-7xl px-4">
         {games.map((game) => (
           <GameCard
             key={game.id}

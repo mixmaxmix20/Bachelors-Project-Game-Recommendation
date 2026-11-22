@@ -8,6 +8,7 @@ import Collection from "./pages/Collection/Collection";
 import Recommendation from "./pages/Recommendation/Recommendation";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/common/ProtectedRoute";
+import ProtectedLayout from "./components/layout/ProtectedLayout";
 
 function App() {
   return (
@@ -19,29 +20,16 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route
-              path="/profile"
               element={
                 <ProtectedRoute>
-                  <Profile />
+                  <ProtectedLayout />
                 </ProtectedRoute>
               }
-            />
-            <Route
-              path="/collection"
-              element={
-                <ProtectedRoute>
-                  <Collection />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/recommendation"
-              element={
-                <ProtectedRoute>
-                  <Recommendation />
-                </ProtectedRoute>
-              }
-            />
+            >
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/collection" element={<Collection />} />
+              <Route path="/recommendation" element={<Recommendation />} />
+            </Route>
           </Routes>
         </AuthProvider>
       </BrowserRouter>

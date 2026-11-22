@@ -9,7 +9,6 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ActionFeedback from "../../components/common/ActionFeedback";
 import { useSettingsSave } from "../../hooks/useSettingsSave";
-import Navbar from "../../components/layout/Navbar";
 import { useAuth } from "../../contexts/AuthContext";
 import {
   fetchUserProfilePreferences,
@@ -147,8 +146,7 @@ function Profile() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#121416] text-[#ddddff]">
-      <Navbar />
+    <div className="flex flex-col items-center justify-center min-h-full bg-[#121416] text-[#ddddff]">
       <h2 className="mt-5">Zalogowany jako: {user?.email}</h2>
       {showRegistrationSuccess && (
         <ActionFeedback
@@ -303,7 +301,7 @@ function Profile() {
           />
         </fieldset>
       </div>
-      <div className="mt-4 mb-24 flex flex-col items-center pointer-fine:mb-6">
+      <div className="mt-4 mb-6 flex flex-col items-center">
         <Button
           onClick={saveChanges}
           isStandalone={true}
