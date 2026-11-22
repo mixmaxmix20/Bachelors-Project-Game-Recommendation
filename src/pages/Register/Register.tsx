@@ -8,6 +8,8 @@ import ActionFeedback, {
 import Button from "../../components/layout/Button";
 import { describeOperationError } from "../../services/operationError";
 
+const minimumPasswordLength = 8;
+
 function Register() {
   const { user, register } = useAuth();
   const [email, setEmail] = useState("");
@@ -31,39 +33,61 @@ function Register() {
     event.preventDefault();
     if (isSubmitting) return;
 
+    const { elements } = event.currentTarget;
+    const emailInput = elements.namedItem("email") as HTMLInputElement;
+    const passwordInput = elements.namedItem("password") as HTMLInputElement;
+    const confirmInput = elements.namedItem(
+      "passwordConfirm",
+    ) as HTMLInputElement;
+    const errors = [
+      {
+        input: emailInput,
+        message:
+          emailInput.validity.valueMissing || emailInput.validity.typeMismatch
+            ? "Wprowadź poprawny adres e-mail."
+            : "",
+        setError: setEmailError,
+      },
+      {
+        input: passwordInput,
+        message: passwordInput.validity.valueMissing
+          ? "Wprowadź hasło."
+          : passwordInput.value.length < minimumPasswordLength
+            ? `Hasło musi mieć przynajmniej ${minimumPasswordLength} znaków.`
+            : "",
+        setError: setPasswordError,
+      },
+      {
+        input: confirmInput,
+        message: confirmInput.validity.valueMissing
+          ? "Potwierdź hasło."
+          : confirmInput.value !== passwordInput.value
+            ? "Hasła muszą być identyczne."
+            : "",
+        setError: setPasswordConfirmError,
+      },
+    ];
+
     setFeedback(null);
-    setPasswordError("");
-    setEmailError("");
-    setPasswordConfirmError("");
-
-    if ("" === email) {
-      setEmailError("Proszę wprowadzić prawidłowy adres email");
-      return;
-    }
-
-    if ("" === password) {
-      setPasswordError("Proszę wprowadzić prawidłowe hasło");
-      return;
-    }
-
-    if (password.length < 8) {
-      setPasswordError("Hasło musi mieć przynajmniej 8 znaków");
-      return;
-    }
-
-    if (password !== passwordConfirm) {
-      setPasswordConfirmError("Hasła muszą być identyczne");
+    for (const { message, setError } of errors) setError(message);
+    const firstInvalid = errors.find(({ message }) => message);
+    if (firstInvalid) {
+      requestAnimationFrame(() => firstInvalid.input.focus());
       return;
     }
 
     setFeedback({ kind: "pending", message: "Tworzenie konta…" });
     try {
-      setRegisteredUid(await register(email, password));
+      setRegisteredUid(await register(emailInput.value, passwordInput.value));
     } catch (error) {
       const { field, message } = describeOperationError(error, "register");
       setFeedback(field ? null : { kind: "error", message });
       if (field === "email") setEmailError(message);
       if (field === "password") setPasswordError(message);
+      if (field) {
+        const invalidInput = field === "email" ? emailInput : passwordInput;
+        requestAnimationFrame(() => invalidInput.focus());
+      }
     }
   }
 
@@ -98,6 +122,7 @@ function Register() {
           autoComplete="new-password"
           value={password}
           error={passwordError}
+          hint={`Użyj co najmniej ${minimumPasswordLength} znaków.`}
           disabled={isSubmitting}
           onChange={(value) => {
             setPassword(value);

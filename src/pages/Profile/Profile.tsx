@@ -169,10 +169,12 @@ function Profile() {
         >
           <div className="flex flex-col items-start justify-center">
             <h3 className="text-xl font-bold mb-5">Lata wydania</h3>
-            <label htmlFor="release-year-min" className="mb-5">
-              <span className="sr-only">Rok wydania </span>Od:{" "}
+            <div className="mb-5">
+              <label htmlFor="release-year-min">
+                <span className="sr-only">Rok wydania </span>Od:
+              </label>{" "}
               <span className="text-xl font-bold">{releaseDateMin}</span>
-            </label>
+            </div>
             <input
               id="release-year-min"
               type="range"
@@ -188,10 +190,12 @@ function Profile() {
               }
               className="range grow w-full lg:max-w-125 mb-5"
             />
-            <label htmlFor="release-year-max" className="mb-5">
-              <span className="sr-only">Rok wydania </span>Do:{" "}
+            <div className="mb-5">
+              <label htmlFor="release-year-max">
+                <span className="sr-only">Rok wydania </span>Do:
+              </label>{" "}
               <span className="text-xl font-bold">{releaseDateMax}</span>
-            </label>
+            </div>
             <input
               id="release-year-max"
               type="range"
@@ -210,12 +214,14 @@ function Profile() {
           </div>
           <div className="flex flex-col items-start justify-center">
             <h3 className="text-xl font-bold mb-5">Długość gry</h3>
-            <label htmlFor="game-length-min" className="mb-5">
-              <span className="sr-only">Długość gry </span>Od:{" "}
+            <div className="mb-5">
+              <label htmlFor="game-length-min">
+                <span className="sr-only">Długość gry </span>Od:
+              </label>{" "}
               <span className="text-xl font-bold">
                 {formatHours(lengthMin)}
               </span>
-            </label>
+            </div>
             <input
               id="game-length-min"
               type="range"
@@ -223,6 +229,7 @@ function Profile() {
               max={gameLengthBounds.max}
               step={1}
               value={lengthMin}
+              aria-valuetext={formatHours(lengthMin)}
               onChange={(ev) =>
                 setGameLength([
                   Math.min(ev.target.valueAsNumber, lengthMax),
@@ -231,12 +238,14 @@ function Profile() {
               }
               className="range grow w-full lg:max-w-125 mb-5"
             />
-            <label htmlFor="game-length-max" className="mb-5">
-              <span className="sr-only">Długość gry </span>Do:{" "}
+            <div className="mb-5">
+              <label htmlFor="game-length-max">
+                <span className="sr-only">Długość gry </span>Do:
+              </label>{" "}
               <span className="text-xl font-bold">
                 {formatHours(lengthMax)}
               </span>
-            </label>
+            </div>
             <input
               id="game-length-max"
               type="range"
@@ -244,6 +253,7 @@ function Profile() {
               max={gameLengthBounds.max}
               step={1}
               value={lengthMax}
+              aria-valuetext={formatHours(lengthMax)}
               onChange={(ev) =>
                 setGameLength([
                   lengthMin,

@@ -52,6 +52,9 @@ function Recommendation() {
     genreWeight,
     criticRatingWeight,
   } = settings;
+  const ratingPercent = Math.round(popularityWeight * 100);
+  const genrePercent = Math.round(genreWeight * 100);
+  const criticPercent = Math.round(criticRatingWeight * 100);
   const { feedback, isSaving, markEdited, save } =
     useSettingsSave("recommendations");
   const [loadFailed, setLoadFailed] = useState(false);
@@ -136,62 +139,72 @@ function Recommendation() {
           Ustawienia rekomendacji
         </summary>
         <div className="collapse-content">
-          <div className="my-4">
-            <label className="flex flex-col gap-2 text-lg text-white">
-              Balans oceny/preferencje: {(popularityWeight * 100).toFixed(0)}% /{" "}
-              {(100 - 100 * popularityWeight).toFixed(0)}%
-              <input
-                type="range"
-                min={0}
-                max={100}
-                step={10}
-                value={popularityWeight * 100}
-                disabled={!settingsReady}
-                onChange={(e) =>
-                  updateWeight("ratingWeight", Number(e.target.value) / 100)
-                }
-                className="range grow w-full"
-              />
-            </label>
+          <div className="my-4 flex flex-col gap-2 text-lg text-white">
+            <div>
+              <label htmlFor="recommendation-rating-weight">
+                Balans ocen i preferencji
+              </label>
+              {": "}
+              {ratingPercent}% / {100 - ratingPercent}%
+            </div>
+            <input
+              id="recommendation-rating-weight"
+              type="range"
+              min={0}
+              max={100}
+              step={10}
+              value={popularityWeight * 100}
+              aria-valuetext={`Oceny ${ratingPercent}%, preferencje ${100 - ratingPercent}%`}
+              disabled={!settingsReady}
+              onChange={(e) =>
+                updateWeight("ratingWeight", Number(e.target.value) / 100)
+              }
+              className="range grow w-full"
+            />
           </div>
-          <div className="my-4">
-            <label className="flex flex-col gap-2 text-lg text-white">
-              Balans preferencji: {(genreWeight * 100).toFixed(0)}% gatunek /{" "}
-              {(100 - 100 * genreWeight).toFixed(0)}% tematyka
-              <input
-                type="range"
-                min={0}
-                max={100}
-                step={10}
-                value={genreWeight * 100}
-                disabled={!settingsReady}
-                onChange={(e) =>
-                  updateWeight("genreWeight", Number(e.target.value) / 100)
-                }
-                className="range grow w-full"
-              />
-            </label>
+          <div className="my-4 flex flex-col gap-2 text-lg text-white">
+            <div>
+              <label htmlFor="recommendation-genre-weight">
+                Balans preferencji
+              </label>
+              {": "}
+              {genrePercent}% gatunek / {100 - genrePercent}% tematyka
+            </div>
+            <input
+              id="recommendation-genre-weight"
+              type="range"
+              min={0}
+              max={100}
+              step={10}
+              value={genreWeight * 100}
+              aria-valuetext={`Gatunek ${genrePercent}%, tematyka ${100 - genrePercent}%`}
+              disabled={!settingsReady}
+              onChange={(e) =>
+                updateWeight("genreWeight", Number(e.target.value) / 100)
+              }
+              className="range grow w-full"
+            />
           </div>
-          <div className="my-4">
-            <label className="flex flex-col gap-2 text-lg text-white">
-              Balans ocen: {(criticRatingWeight * 100).toFixed(0)}% krytycy /{" "}
-              {(100 - criticRatingWeight * 100).toFixed(0)}% gracze
-              <input
-                type="range"
-                min={0}
-                max={100}
-                step={10}
-                value={criticRatingWeight * 100}
-                disabled={!settingsReady}
-                onChange={(e) =>
-                  updateWeight(
-                    "criticRatingWeight",
-                    Number(e.target.value) / 100,
-                  )
-                }
-                className="range grow w-full"
-              />
-            </label>
+          <div className="my-4 flex flex-col gap-2 text-lg text-white">
+            <div>
+              <label htmlFor="recommendation-critic-weight">Balans ocen</label>
+              {": "}
+              {criticPercent}% krytycy / {100 - criticPercent}% gracze
+            </div>
+            <input
+              id="recommendation-critic-weight"
+              type="range"
+              min={0}
+              max={100}
+              step={10}
+              value={criticRatingWeight * 100}
+              aria-valuetext={`Krytycy ${criticPercent}%, gracze ${100 - criticPercent}%`}
+              disabled={!settingsReady}
+              onChange={(e) =>
+                updateWeight("criticRatingWeight", Number(e.target.value) / 100)
+              }
+              className="range grow w-full"
+            />
           </div>
           <div className="text-center">
             <h4>Analiza czasowa:</h4>

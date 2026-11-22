@@ -2,6 +2,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import AuthField from "../../components/common/AuthField";
+import ActionFeedback, {
+  type ActionMessage,
+} from "../../components/common/ActionFeedback";
 import Button from "../../components/layout/Button";
 
 function Login() {
@@ -10,7 +13,8 @@ function Login() {
   const [email, setEmail] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [emailError, setEmailError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState<ActionMessage | null>(null);
+  const isSubmitting = feedback?.kind === "pending";
   const [signedInUid, setSignedInUid] = useState<string | null>(null);
 
   const navigate = useNavigate();
@@ -25,25 +29,29 @@ function Login() {
     event.preventDefault();
     if (isSubmitting) return;
 
-    setPasswordError("");
-    setEmailError("");
-
-    if ("" === email) {
-      setEmailError("Proszę wprowadzić prawidłowy adres email");
+    const { elements } = event.currentTarget;
+    const emailInput = elements.namedItem("email") as HTMLInputElement;
+    const passwordInput = elements.namedItem("password") as HTMLInputElement;
+    const invalidEmail =
+      emailInput.validity.valueMissing || emailInput.validity.typeMismatch;
+    const missingPassword = passwordInput.validity.valueMissing;
+    setFeedback(null);
+    setEmailError(invalidEmail ? "Wprowadź poprawny adres e-mail." : "");
+    setPasswordError(missingPassword ? "Wprowadź hasło." : "");
+    if (invalidEmail || missingPassword) {
+      const firstInvalid = invalidEmail ? emailInput : passwordInput;
+      requestAnimationFrame(() => firstInvalid.focus());
       return;
     }
 
-    if ("" === password) {
-      setPasswordError("Proszę wprowadzić prawidłowe hasło");
-      return;
-    }
-
-    setIsSubmitting(true);
+    setFeedback({ kind: "pending", message: "Logowanie…" });
     try {
-      setSignedInUid(await login(email, password));
+      setSignedInUid(await login(emailInput.value, passwordInput.value));
     } catch {
-      setIsSubmitting(false);
-      alert(`Błąd: Niepoprawne dane`);
+      setFeedback({
+        kind: "error",
+        message: "Nie udało się zalogować. Sprawdź dane i spróbuj ponownie.",
+      });
     }
   }
 
@@ -63,7 +71,12 @@ function Login() {
           autoComplete="username"
           value={email}
           error={emailError}
-          onChange={setEmail}
+          disabled={isSubmitting}
+          onChange={(value) => {
+            setEmail(value);
+            setEmailError("");
+            setFeedback(null);
+          }}
         />
         <AuthField
           name="password"
@@ -73,12 +86,18 @@ function Login() {
           autoComplete="current-password"
           value={password}
           error={passwordError}
-          onChange={setPassword}
+          disabled={isSubmitting}
+          onChange={(value) => {
+            setPassword(value);
+            setPasswordError("");
+            setFeedback(null);
+          }}
         />
         <Button type="submit" isStandalone disabled={isSubmitting}>
           Zaloguj się
         </Button>
       </form>
+      <ActionFeedback feedback={feedback} />
     </div>
   );
 }
