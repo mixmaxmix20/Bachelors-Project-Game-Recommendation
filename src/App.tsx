@@ -9,6 +9,7 @@ import Recommendation from "./pages/Recommendation/Recommendation";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import ProtectedLayout from "./components/layout/ProtectedLayout";
+import { protectedPages } from "./protectedPages";
 
 function App() {
   return (
@@ -26,9 +27,15 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/collection" element={<Collection />} />
-              <Route path="/recommendation" element={<Recommendation />} />
+              <Route path={protectedPages.profile.path} element={<Profile />} />
+              <Route
+                path={protectedPages.collection.path}
+                element={<Collection />}
+              />
+              <Route
+                path={protectedPages.recommendation.path}
+                element={<Recommendation />}
+              />
             </Route>
           </Routes>
         </AuthProvider>

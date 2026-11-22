@@ -15,6 +15,8 @@ import {
   saveUserProfilePreferences,
 } from "../../services/gameService";
 import Button from "../../components/layout/Button";
+import PageHeading from "../../components/layout/PageHeading";
+import { protectedPages } from "../../protectedPages";
 
 import PreferenceSelector from "./PreferenceSelector";
 
@@ -146,8 +148,11 @@ function Profile() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-full bg-[#121416] text-[#ddddff]">
-      <h2 className="mt-5">Zalogowany jako: {user?.email}</h2>
+    <div className="flex flex-col items-center min-h-full bg-[#121416] text-[#ddddff]">
+      <PageHeading title={protectedPages.profile.label} />
+      <p className="mt-3 px-4 text-center wrap-anywhere">
+        Zalogowany jako: {user?.email}
+      </p>
       {showRegistrationSuccess && (
         <ActionFeedback
           feedback={{ kind: "success", message: "Konto zostało utworzone" }}
@@ -166,7 +171,7 @@ function Profile() {
           className="flex flex-col w-full min-w-0 max-h-full justify-between"
         >
           <div className="flex flex-col items-start justify-center">
-            <h3 className="text-xl font-bold mb-5">Lata wydania</h3>
+            <h2 className="text-xl font-bold mb-5">Lata wydania</h2>
             <div className="mb-5">
               <label htmlFor="release-year-min">
                 <span className="sr-only">Rok wydania </span>Od:
@@ -211,7 +216,7 @@ function Profile() {
             />
           </div>
           <div className="flex flex-col items-start justify-center">
-            <h3 className="text-xl font-bold mb-5">Długość gry</h3>
+            <h2 className="text-xl font-bold mb-5">Długość gry</h2>
             <div className="mb-5">
               <label htmlFor="game-length-min">
                 <span className="sr-only">Długość gry </span>Od:

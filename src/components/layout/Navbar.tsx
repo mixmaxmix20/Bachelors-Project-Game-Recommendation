@@ -1,25 +1,23 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { protectedPages } from "../../protectedPages";
 
 const links = [
   {
-    to: "/profile",
-    label: "Profil",
+    ...protectedPages.profile,
     iconPaths: [
       "M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z",
     ],
   },
   {
-    to: "/collection",
-    label: "Kolekcja",
+    ...protectedPages.collection,
     iconPaths: [
       "M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z",
     ],
   },
   {
-    to: "/recommendation",
-    label: "Rekomendacje",
+    ...protectedPages.recommendation,
     iconPaths: [
       "M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 1 3 2.48Z",
       "M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z",
@@ -98,12 +96,11 @@ function Navbar() {
         id="main-navigation-items"
         className="grid grid-cols-4 gap-1 lg:flex lg:flex-col"
       >
-        {links.map(({ to, label, iconPaths }) => (
+        {links.map(({ path, label, iconPaths }) => (
           <NavLink
-            key={to}
-            to={to}
-            end
-            className={`flex aria-[current=page]:bg-amber-300/15 aria-[current=page]:text-amber-300 ${itemClasses}`}
+            key={path}
+            to={path}
+            className={`flex aria-[current=page]:bg-amber-300/15 aria-[current=page]:text-amber-300 aria-[current=page]:inset-ring-1 aria-[current=page]:inset-ring-amber-300/80 ${itemClasses}`}
           >
             <NavigationIcon paths={iconPaths} />
             <span className={labelClasses}>{label}</span>

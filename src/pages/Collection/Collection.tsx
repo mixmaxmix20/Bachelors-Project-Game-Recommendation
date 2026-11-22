@@ -1,4 +1,6 @@
 import GameCard from "../../components/layout/GameCard";
+import PageHeading from "../../components/layout/PageHeading";
+import { protectedPages } from "../../protectedPages";
 import ActionFeedback, {
   type ActionMessage,
 } from "../../components/common/ActionFeedback";
@@ -242,8 +244,8 @@ function Collection() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-start pt-2 sm:pt-5 min-h-full bg-[#121416] text-[#ddddff] pb-8">
-      <div className="flex flex-col items-center justify-center text-6xl font-bold"></div>
+    <div className="flex flex-col items-center justify-start min-h-full bg-[#121416] text-[#ddddff] pb-8">
+      <PageHeading title={protectedPages.collection.label} />
       {/*Search bar*/}
       <div className="relative mb-4 mt-5 w-full max-w-xl px-4">
         <label htmlFor="collection-search" className="mb-1 block font-semibold">

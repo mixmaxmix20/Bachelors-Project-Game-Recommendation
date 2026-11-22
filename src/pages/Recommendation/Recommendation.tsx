@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import RecommendationCard from "../../components/layout/RecommendationCard";
 import Button from "../../components/layout/Button";
+import PageHeading from "../../components/layout/PageHeading";
+import { protectedPages } from "../../protectedPages";
 import ActionFeedback from "../../components/common/ActionFeedback";
 import { useSettingsSave } from "../../hooks/useSettingsSave";
 import { useAuth } from "../../contexts/AuthContext";
@@ -131,7 +133,8 @@ function Recommendation() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-start pt-6 sm:pt-10 min-h-full w-full p-5 box-border bg-[#121416] text-[#ddddff] pb-8">
+    <div className="flex flex-col items-center justify-start min-h-full w-full px-5 box-border bg-[#121416] text-[#ddddff] pb-8">
+      <PageHeading title={protectedPages.recommendation.label} />
       <details className="collapse collapse-arrow w-full max-w-xl md:max-w-2xl my-4 bg-[#1f2326] rounded-lg">
         <summary className="collapse-title font-semibold">
           Ustawienia rekomendacji
