@@ -33,6 +33,7 @@ function Collection() {
   const [activeGameId, setActiveGameId] = useState<number | null>(null);
   const [addFeedback, setAddFeedback] = useState<ActionMessage | null>(null);
   const addingGame = useRef(false);
+  const searchInput = useRef<HTMLInputElement>(null);
   const isAdding = addFeedback?.kind === "pending";
   const normalizedQuery = searchQuery.toLowerCase();
   const searchResults: Game[] = [];
@@ -197,10 +198,32 @@ function Collection() {
     }
   }
 
-  async function deleteGame(gameId: number) {
+  function moveFocusFromCard(card: HTMLDivElement) {
+    if (!card.contains(document.activeElement)) return;
+
+    const editButtonSelector =
+      'button[data-collection-edit]:not([aria-disabled="true"])';
+    let nextCard = card.nextElementSibling;
+    let previousCard = card.previousElementSibling;
+    while (nextCard || previousCard) {
+      const editButton =
+        nextCard?.querySelector<HTMLButtonElement>(editButtonSelector) ??
+        previousCard?.querySelector<HTMLButtonElement>(editButtonSelector);
+      if (editButton) {
+        editButton.focus();
+        return;
+      }
+      nextCard = nextCard?.nextElementSibling ?? null;
+      previousCard = previousCard?.previousElementSibling ?? null;
+    }
+    searchInput.current?.focus();
+  }
+
+  async function deleteGame(gameId: number, card: HTMLDivElement) {
     if (!uid) throw new Error("Brak aktywnej sesji");
 
     await deleteGameFromUserCollection(uid, gameId);
+    moveFocusFromCard(card);
     setGames((previous) => previous.filter((game) => game.id !== gameId));
   }
 
@@ -229,6 +252,7 @@ function Collection() {
           Wyszukaj grę
         </label>
         <input
+          ref={searchInput}
           id="collection-search"
           type="text"
           role="combobox"

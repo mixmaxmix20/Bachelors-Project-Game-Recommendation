@@ -2,11 +2,11 @@ import type { Game } from "../../types/game";
 import { describeOperationError } from "../../services/operationError";
 import ActionFeedback, { type ActionMessage } from "../common/ActionFeedback";
 import { formatHours, hoursUnit } from "../common/formatNumbers";
-import { useRef, useState, type FormEvent } from "react";
+import { useCallback, useRef, useState, type FormEvent } from "react";
 
 interface GameCardProps {
   game: Game;
-  deleteGame: (gameId: number) => Promise<void>;
+  deleteGame: (gameId: number, card: HTMLDivElement) => Promise<void>;
   saveChanges: (
     gameId: number,
     starRating: number | undefined,
@@ -16,7 +16,7 @@ interface GameCardProps {
 
 const ratings = [1, 2, 3, 4, 5];
 const actionButtonClasses =
-  "px-3 sm:px-5 py-1.5 rounded-md self-center cursor-pointer text-white ui-focus disabled:cursor-not-allowed disabled:opacity-50";
+  "px-3 sm:px-5 py-1.5 rounded-md self-center cursor-pointer text-white ui-focus aria-disabled:cursor-not-allowed aria-disabled:opacity-50";
 
 function GameCard({ game, deleteGame, saveChanges }: GameCardProps) {
   const [draft, setDraft] = useState<{
@@ -25,7 +25,13 @@ function GameCard({ game, deleteGame, saveChanges }: GameCardProps) {
   } | null>(null);
   const [feedback, setFeedback] = useState<ActionMessage | null>(null);
   const actionInProgress = useRef(false);
-  const editButton = useRef<HTMLButtonElement>(null);
+  const card = useRef<HTMLDivElement>(null);
+  const returnFocusToEdit = useRef(false);
+  const setEditButton = useCallback((button: HTMLButtonElement | null) => {
+    if (!button || !returnFocusToEdit.current) return;
+    returnFocusToEdit.current = false;
+    if (document.activeElement === document.body) button.focus();
+  }, []);
   const isPending = feedback?.kind === "pending";
 
   function startEditing() {
@@ -38,10 +44,9 @@ function GameCard({ game, deleteGame, saveChanges }: GameCardProps) {
   }
 
   function closeEditor() {
+    returnFocusToEdit.current =
+      card.current?.contains(document.activeElement) ?? false;
     setDraft(null);
-    requestAnimationFrame(() => {
-      if (document.activeElement === document.body) editButton.current?.focus();
-    });
   }
 
   async function runAction(
@@ -88,8 +93,17 @@ function GameCard({ game, deleteGame, saveChanges }: GameCardProps) {
     closeEditor();
   }
 
+  function handleDelete() {
+    const currentCard = card.current;
+    if (!currentCard) return;
+    void runAction("collection-delete", () => deleteGame(game.id, currentCard));
+  }
+
   return (
-    <div className="card text-center border border-ui-border p-2 rounded-lg">
+    <div
+      ref={card}
+      className="card text-center border border-ui-border p-2 rounded-lg"
+    >
       <figure>
         <img
           className="w-full aspect-3/4 object-cover rounded-md"
@@ -102,95 +116,101 @@ function GameCard({ game, deleteGame, saveChanges }: GameCardProps) {
       </h3>
       {draft ? (
         <form onSubmit={handleSave}>
-          <fieldset disabled={isPending}>
-            <div className="h-14 sm:h-16 flex flex-col justify-center items-center gap-0.5">
-              <div
-                role="group"
-                aria-label="Ocena osobista"
-                className="flex justify-center"
-              >
-                {ratings.map((rating) => (
-                  <button
-                    key={rating}
-                    type="button"
-                    aria-label={`Oceń na ${rating} z 5`}
-                    aria-pressed={rating === draft.starRating}
-                    autoFocus={rating === (draft.starRating || 1)}
-                    className={`text-xl sm:text-2xl cursor-pointer leading-none ui-focus disabled:cursor-not-allowed ${rating <= draft.starRating ? "text-amber-400" : "text-[#ccc]"}`}
-                    onClick={() => setDraft({ ...draft, starRating: rating })}
-                  >
-                    &#9733;
-                  </button>
-                ))}
-              </div>
-              <label className="flex items-center gap-1 justify-center">
-                <span className="sr-only">Czas gry w godzinach</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="any"
-                  value={draft.playtime}
-                  onChange={(event) =>
-                    setDraft({ ...draft, playtime: event.currentTarget.value })
-                  }
-                  placeholder="Czas gry"
-                  className="w-14 h-6 text-center border border-ui-border ui-focus rounded bg-transparent text-xs sm:text-sm"
-                />
-                <span
-                  aria-hidden="true"
-                  className="text-xs sm:text-sm text-ui-muted"
+          <div className="h-14 sm:h-16 flex flex-col justify-center items-center gap-0.5">
+            <div
+              role="group"
+              aria-label="Ocena osobista"
+              className="flex justify-center"
+            >
+              {ratings.map((rating) => (
+                <button
+                  key={rating}
+                  type="button"
+                  aria-label={`Oceń na ${rating} z 5`}
+                  aria-pressed={rating === draft.starRating}
+                  aria-disabled={isPending}
+                  autoFocus={rating === (draft.starRating || 1)}
+                  className={`text-xl sm:text-2xl cursor-pointer leading-none ui-focus aria-disabled:cursor-not-allowed ${rating <= draft.starRating ? "text-amber-400" : "text-[#ccc]"}`}
+                  onClick={() => {
+                    if (actionInProgress.current) return;
+                    setDraft({ ...draft, starRating: rating });
+                  }}
                 >
-                  {hoursUnit}
-                </span>
-              </label>
+                  &#9733;
+                </button>
+              ))}
             </div>
+            <label className="flex items-center gap-1 justify-center">
+              <span className="sr-only">Czas gry w godzinach</span>
+              <input
+                type="number"
+                min="0"
+                step="any"
+                value={draft.playtime}
+                readOnly={isPending}
+                onChange={(event) => {
+                  if (actionInProgress.current) return;
+                  setDraft({ ...draft, playtime: event.currentTarget.value });
+                }}
+                placeholder="Czas gry"
+                className="w-14 h-6 text-center border border-ui-border ui-focus rounded bg-transparent text-xs sm:text-sm"
+              />
+              <span
+                aria-hidden="true"
+                className="text-xs sm:text-sm text-ui-muted"
+              >
+                {hoursUnit}
+              </span>
+            </label>
+          </div>
 
-            <div className="flex items-center gap-4 mt-2 justify-center">
-              <button
-                type="submit"
-                aria-label="Zapisz zmiany"
-                className={`${actionButtonClasses} bg-green-500 enabled:hover:bg-green-700`}
+          <div className="flex items-center gap-4 mt-2 justify-center">
+            <button
+              type="submit"
+              aria-label="Zapisz zmiany"
+              aria-disabled={isPending}
+              className={`${actionButtonClasses} bg-green-500 not-aria-disabled:hover:bg-green-700`}
+            >
+              <svg
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-5"
               >
-                <svg
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="size-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="m4.5 12.75 6 6 9-13.5"
-                  />
-                </svg>
-              </button>
-              <button
-                type="button"
-                aria-label="Anuluj edycję"
-                className={`${actionButtonClasses} bg-[rgb(203,49,49)] enabled:hover:bg-red-800`}
-                onClick={handleCancel}
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="m4.5 12.75 6 6 9-13.5"
+                />
+              </svg>
+            </button>
+            <button
+              type="button"
+              aria-label="Anuluj edycję"
+              aria-disabled={isPending}
+              className={`${actionButtonClasses} bg-[rgb(203,49,49)] not-aria-disabled:hover:bg-red-800`}
+              onClick={handleCancel}
+            >
+              <svg
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-5"
               >
-                <svg
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="size-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 18 18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-          </fieldset>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18 18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
         </form>
       ) : (
         <>
@@ -222,11 +242,12 @@ function GameCard({ game, deleteGame, saveChanges }: GameCardProps) {
           </div>
           <div className="flex items-center gap-4 mt-2 justify-center">
             <button
-              ref={editButton}
+              ref={setEditButton}
               type="button"
               aria-label="Edytuj grę"
-              disabled={isPending}
-              className={`${actionButtonClasses} bg-yellow-600 enabled:hover:bg-yellow-700`}
+              aria-disabled={isPending}
+              data-collection-edit
+              className={`${actionButtonClasses} bg-yellow-600 not-aria-disabled:hover:bg-yellow-700`}
               onClick={startEditing}
             >
               <svg
@@ -248,11 +269,9 @@ function GameCard({ game, deleteGame, saveChanges }: GameCardProps) {
             <button
               type="button"
               aria-label="Usuń grę"
-              disabled={isPending}
-              className={`${actionButtonClasses} bg-[rgb(203,49,49)] enabled:hover:bg-red-800`}
-              onClick={() =>
-                void runAction("collection-delete", () => deleteGame(game.id))
-              }
+              aria-disabled={isPending}
+              className={`${actionButtonClasses} bg-[rgb(203,49,49)] not-aria-disabled:hover:bg-red-800`}
+              onClick={handleDelete}
             >
               <svg
                 aria-hidden="true"
