@@ -6,6 +6,9 @@ import {
 } from "../../domain/profileRanges";
 import { formatHours } from "../../components/common/formatNumbers";
 import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import ActionFeedback from "../../components/common/ActionFeedback";
+import { useSettingsSave } from "../../hooks/useSettingsSave";
 import Navbar from "../../components/layout/Navbar";
 import { useAuth } from "../../contexts/AuthContext";
 import {
@@ -74,6 +77,14 @@ const platformOptions = availablePlatforms.map((value) => ({
 function Profile() {
   const { user } = useAuth();
   const uid: string | undefined = user?.uid;
+  const location = useLocation();
+  const navigate = useNavigate();
+  const justRegistered = Boolean(uid && location.state?.registeredUid === uid);
+  const [showRegistrationSuccess] = useState(justRegistered);
+  useEffect(() => {
+    // Consume the confirmation in browser history so a reload or Back won't replay it.
+    if (justRegistered) navigate(".", { replace: true, state: null });
+  }, [justRegistered, navigate]);
   const [releaseYears, setReleaseYears] = useState<PreferenceRange>([
     releaseYearBounds.min,
     releaseYearBounds.max,
@@ -90,6 +101,7 @@ function Profile() {
   const [loadedUid, setLoadedUid] = useState<string | null>(null);
   const [loadFailedUid, setLoadFailedUid] = useState<string | null>(null);
   const canSave = Boolean(uid && loadedUid === uid);
+  const { feedback, isSaving, markEdited, save } = useSettingsSave("profile");
   useEffect(() => {
     if (!uid) return;
 
@@ -119,30 +131,30 @@ function Profile() {
     };
   }, [uid]);
 
-  async function saveChanges() {
+  function saveChanges() {
     if (!uid || !canSave) return;
-
-    const data = {
-      yearStart: releaseDateMin,
-      yearEnd: releaseDateMax,
-      genres: genres,
-      themes: themes,
-      platforms: platforms,
-      timeStart: lengthMin,
-      timeEnd: lengthMax,
-    };
-    try {
-      await saveUserProfilePreferences(uid, data);
-    } catch (error) {
-      console.error("Nie udało się zaktualizować danych", error);
-      alert("Nie udało się zapisać danych");
-    }
+    return save(() =>
+      saveUserProfilePreferences(uid, {
+        yearStart: releaseDateMin,
+        yearEnd: releaseDateMax,
+        genres,
+        themes,
+        platforms,
+        timeStart: lengthMin,
+        timeEnd: lengthMax,
+      }),
+    );
   }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#121416] text-[#ddddff]">
       <Navbar />
       <h2 className="mt-5">Zalogowany jako: {user?.email}</h2>
+      {showRegistrationSuccess && (
+        <ActionFeedback
+          feedback={{ kind: "success", message: "Konto zostało utworzone" }}
+        />
+      )}
       {loadFailedUid === uid && (
         <p role="alert">
           Nie udało się wczytać preferencji. Odśwież stronę, aby spróbować
@@ -152,6 +164,7 @@ function Profile() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 xl:gap-28 px-4 mt-6 lg:min-h-140 items-stretch lg:mt-8 w-full lg:max-w-5xl xl:w-2/3">
         <fieldset
           disabled={!canSave}
+          onChange={markEdited}
           className="flex flex-col w-full min-w-0 max-h-full justify-between"
         >
           <div className="flex flex-col items-start justify-center">
@@ -251,7 +264,10 @@ function Profile() {
             placeholder="Wybierz gatunek"
             options={availableGenres}
             selected={genres}
-            onChange={setGenres}
+            onChange={(values) => {
+              setGenres(values);
+              markEdited();
+            }}
           />
           <PreferenceSelector
             label="Ulubione motywy:"
@@ -259,7 +275,10 @@ function Profile() {
             placeholder="Wybierz motyw"
             options={availableThemes}
             selected={themes}
-            onChange={setThemes}
+            onChange={(values) => {
+              setThemes(values);
+              markEdited();
+            }}
           />
           <PreferenceSelector
             label="Platformy:"
@@ -267,14 +286,22 @@ function Profile() {
             placeholder="Wybierz platformę"
             options={platformOptions}
             selected={platforms}
-            onChange={setPlatforms}
+            onChange={(values) => {
+              setPlatforms(values);
+              markEdited();
+            }}
           />
         </fieldset>
       </div>
-      <div className="mt-4 mb-24 pointer-fine:mb-6">
-        <Button onClick={saveChanges} isStandalone={true} disabled={!canSave}>
+      <div className="mt-4 mb-24 flex flex-col items-center pointer-fine:mb-6">
+        <Button
+          onClick={saveChanges}
+          isStandalone={true}
+          disabled={!canSave || isSaving}
+        >
           Zapisz zmiany
         </Button>
+        <ActionFeedback feedback={feedback} />
       </div>
     </div>
   );

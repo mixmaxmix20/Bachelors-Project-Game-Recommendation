@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import Navbar from "../../components/layout/Navbar";
 import RecommendationCard from "../../components/layout/RecommendationCard";
 import Button from "../../components/layout/Button";
+import ActionFeedback from "../../components/common/ActionFeedback";
+import { useSettingsSave } from "../../hooks/useSettingsSave";
 import { useAuth } from "../../contexts/AuthContext";
 import {
   defaultRecommendationSettings,
@@ -50,6 +52,10 @@ function Recommendation() {
     genreWeight,
     criticRatingWeight,
   } = settings;
+  const { feedback, isSaving, markEdited, save } =
+    useSettingsSave("recommendations");
+  const [loadFailed, setLoadFailed] = useState(false);
+  const settingsReady = Boolean(uid && userSettings?.uid === uid);
 
   useEffect(() => {
     if (!uid) return;
@@ -81,8 +87,10 @@ function Recommendation() {
     };
 
     loadRecommendations().catch((error) => {
-      if (active)
+      if (active) {
+        setLoadFailed(true);
         console.error("Nie udało się wczytać danych rekomendacji", error);
+      }
     });
 
     return () => {
@@ -110,18 +118,14 @@ function Recommendation() {
   );
 
   function updateWeight(weight: keyof RecommendationSettings, value: number) {
-    if (uid)
-      setUserSettings({ uid, settings: { ...settings, [weight]: value } });
+    if (!uid || !settingsReady) return;
+    markEdited();
+    setUserSettings({ uid, settings: { ...settings, [weight]: value } });
   }
 
-  const handleSaveSettings = async () => {
-    if (!uid) return;
-
-    try {
-      await saveRecommendationSettings(uid, settings);
-    } catch (error) {
-      console.error("Błąd zapisu:", error);
-    }
+  const handleSaveSettings = () => {
+    if (uid && settingsReady)
+      return save(() => saveRecommendationSettings(uid, settings));
   };
 
   return (
@@ -142,6 +146,7 @@ function Recommendation() {
                 max={100}
                 step={10}
                 value={popularityWeight * 100}
+                disabled={!settingsReady}
                 onChange={(e) =>
                   updateWeight("ratingWeight", Number(e.target.value) / 100)
                 }
@@ -159,6 +164,7 @@ function Recommendation() {
                 max={100}
                 step={10}
                 value={genreWeight * 100}
+                disabled={!settingsReady}
                 onChange={(e) =>
                   updateWeight("genreWeight", Number(e.target.value) / 100)
                 }
@@ -176,6 +182,7 @@ function Recommendation() {
                 max={100}
                 step={10}
                 value={criticRatingWeight * 100}
+                disabled={!settingsReady}
                 onChange={(e) =>
                   updateWeight(
                     "criticRatingWeight",
@@ -201,10 +208,25 @@ function Recommendation() {
                   ? "Średnia"
                   : "Brak danych"}
           </div>
-          <div className="mt-4 flex justify-center">
-            <Button isStandalone={true} onClick={handleSaveSettings}>
+          <div className="mt-4 flex flex-col items-center">
+            <Button
+              isStandalone={true}
+              onClick={handleSaveSettings}
+              disabled={!settingsReady || isSaving}
+            >
               Zapisz
             </Button>
+            <ActionFeedback
+              feedback={
+                loadFailed && !settingsReady
+                  ? {
+                      kind: "error",
+                      message:
+                        "Nie udało się wczytać ustawień. Odśwież stronę i spróbuj ponownie.",
+                    }
+                  : feedback
+              }
+            />
           </div>
         </div>
       </details>

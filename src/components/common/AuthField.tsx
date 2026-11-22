@@ -8,6 +8,7 @@ interface AuthFieldProps {
   placeholder: string;
   value: string;
   error: string;
+  disabled?: boolean;
   onChange: (value: string) => void;
 }
 
@@ -19,6 +20,7 @@ export default function AuthField({
   placeholder,
   value,
   error,
+  disabled,
   onChange,
 }: AuthFieldProps) {
   const id = useId();
@@ -34,6 +36,7 @@ export default function AuthField({
         autoComplete={autoComplete}
         placeholder={placeholder}
         value={value}
+        disabled={disabled}
         onChange={(event) => onChange(event.currentTarget.value)}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
