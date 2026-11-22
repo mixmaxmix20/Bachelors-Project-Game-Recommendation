@@ -212,7 +212,8 @@ function Recommendation() {
           <div className="text-center">
             <h4>Analiza czasowa:</h4>
             Stosunek twoich czasów gry do średniej globalnej:{" "}
-            {userPreferences?.avgPlaytimeRatio?.toFixed(2) ?? "Brak danych"}
+            {userPreferences?.avgPlaytimeRatio?.toFixed(2).replace(".", ",") ??
+              "Brak danych"}
           </div>
           <div className="text-center">
             Twoja typowa długość rozgrywki:{" "}
