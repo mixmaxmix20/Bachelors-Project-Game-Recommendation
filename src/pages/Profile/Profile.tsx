@@ -13,7 +13,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import {
   fetchUserProfilePreferences,
   saveUserProfilePreferences,
-} from "../../services/gameService";
+} from "../../services/profileService";
 import Button from "../../components/layout/Button";
 import PageHeading from "../../components/layout/PageHeading";
 import { protectedPages } from "../../protectedPages";

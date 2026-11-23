@@ -7,13 +7,13 @@ import ActionFeedback, {
 import { useState, useEffect, useRef, type KeyboardEvent } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import type { Game } from "../../types/game";
+import { fetchGamesDatabase } from "../../services/gameCatalogService";
 import {
-  fetchGamesDatabase,
   fetchUserGames,
   addGameToUserCollection,
   deleteGameFromUserCollection,
   updateUserGame,
-} from "../../services/gameService";
+} from "../../services/collectionService";
 import { describeOperationError } from "../../services/operationError";
 
 type Catalog =

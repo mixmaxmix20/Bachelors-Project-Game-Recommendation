@@ -12,14 +12,14 @@ import {
   inferPreferences,
   rankRecommendations,
 } from "../../domain/recommendations";
+import { fetchUserProfilePreferences } from "../../services/profileService";
 import {
-  fetchUserProfilePreferences,
   fetchRecommendationSettings,
   fetchRecommendationCollection,
   fetchRecommendationHistory,
   fetchRecommendationCandidates,
   saveRecommendationSettings,
-} from "../../services/gameService";
+} from "../../services/recommendationService";
 import type {
   InferredPreferences,
   RecommendationCandidate,
