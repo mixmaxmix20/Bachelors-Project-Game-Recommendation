@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import Button from "../../components/layout/Button";
+import Button from "../../components/common/Button";
 import { useEffect, useRef } from "react";
 import WebGLFluidEnhanced from "webgl-fluid-enhanced";
 

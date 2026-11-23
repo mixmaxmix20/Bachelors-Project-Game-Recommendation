@@ -1,7 +1,9 @@
 import type { Game } from "../../types/game";
 import { describeOperationError } from "../../services/operationError";
-import ActionFeedback, { type ActionMessage } from "../common/ActionFeedback";
-import { formatHours, hoursUnit } from "../common/formatNumbers";
+import ActionFeedback, {
+  type ActionMessage,
+} from "../../components/common/ActionFeedback";
+import { formatHours, hoursUnit } from "../../components/common/formatNumbers";
 import { useCallback, useRef, useState, type FormEvent } from "react";
 
 interface GameCardProps {

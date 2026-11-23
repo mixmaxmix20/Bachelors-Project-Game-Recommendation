@@ -1,4 +1,3 @@
-import GameCard from "../../components/layout/GameCard";
 import PageHeading from "../../components/layout/PageHeading";
 import { protectedPages } from "../../protectedPages";
 import { useState, useEffect, useRef } from "react";
@@ -11,6 +10,7 @@ import {
   updateUserGame,
 } from "../../services/collectionService";
 import CollectionSearch from "./CollectionSearch";
+import GameCard from "./GameCard";
 
 function Collection() {
   const { user } = useAuth();

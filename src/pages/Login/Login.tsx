@@ -5,7 +5,7 @@ import AuthField from "../../components/common/AuthField";
 import ActionFeedback, {
   type ActionMessage,
 } from "../../components/common/ActionFeedback";
-import Button from "../../components/layout/Button";
+import Button from "../../components/common/Button";
 
 function Login() {
   const { user, login } = useAuth();

@@ -4,7 +4,7 @@ import {
   formatHours,
   formatNumber,
   formatRelativeScore,
-} from "../common/formatNumbers";
+} from "../../components/common/formatNumbers";
 
 interface RecommendationCardProps {
   rec: RankedRecommendation;

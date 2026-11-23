@@ -14,7 +14,7 @@ import {
   fetchUserProfilePreferences,
   saveUserProfilePreferences,
 } from "../../services/profileService";
-import Button from "../../components/layout/Button";
+import Button from "../../components/common/Button";
 import PageHeading from "../../components/layout/PageHeading";
 import { protectedPages } from "../../protectedPages";
 
