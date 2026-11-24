@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Button from "../../components/common/Button";
-import PageHeading from "../../components/layout/PageHeading";
 import { protectedPages } from "../../protectedPages";
 import ActionFeedback from "../../components/common/ActionFeedback";
 import { useSettingsSave } from "../../hooks/useSettingsSave";
@@ -26,7 +25,8 @@ import type {
   RecommendationSettings,
   UserProfilePreferences,
 } from "../../types/recommendation";
-import RecommendationCard from "./RecommendationCard";
+import RecommendationList from "./RecommendationList";
+import "./Recommendation.css";
 
 interface RecommendationData {
   uid: string;
@@ -135,110 +135,126 @@ function Recommendation() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-start min-h-full w-full px-5 box-border bg-[#121416] text-[#ddddff] pb-8">
-      <PageHeading title={protectedPages.recommendation.label} />
-      <details className="collapse collapse-arrow w-full max-w-xl md:max-w-2xl my-4 bg-[#1f2326] rounded-lg">
-        <summary className="collapse-title font-semibold">
-          Ustawienia rekomendacji
-        </summary>
-        <div className="collapse-content">
-          <div className="my-4 flex flex-col gap-2 text-lg text-white">
-            <div>
-              <label htmlFor="recommendation-rating-weight">
-                Balans ocen i preferencji
-              </label>
-              {": "}
-              {ratingPercent}% / {100 - ratingPercent}%
+    <div className="min-h-full bg-[#121416] px-4 pt-6 pb-8 text-gray-100 @min-[42rem]/app-content:px-6 @min-[42rem]/app-content:pt-10">
+      <div className="mx-auto max-w-[75rem]">
+        <header className="relative">
+          <h1 className="recommendation-heading">
+            {protectedPages.recommendation.label}
+          </h1>
+          <details className="recommendation-settings">
+            <summary className="ui-focus cursor-pointer rounded-lg border border-white/10 bg-[#1f2326] px-4 font-semibold hover:bg-[#282d31]">
+              Ustawienia rekomendacji
+              <span className="recommendation-chevron" aria-hidden="true" />
+            </summary>
+            <div className="mt-3 rounded-lg border border-white/10 bg-[#1f2326] px-4 py-1">
+              <div className="mx-auto max-w-2xl">
+                <div className="my-4 flex flex-col gap-2 text-lg text-white">
+                  <div>
+                    <label htmlFor="recommendation-rating-weight">
+                      Balans ocen i preferencji
+                    </label>
+                    {": "}
+                    {ratingPercent}% / {100 - ratingPercent}%
+                  </div>
+                  <input
+                    id="recommendation-rating-weight"
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={10}
+                    value={popularityWeight * 100}
+                    aria-valuetext={`Oceny ${ratingPercent}%, preferencje ${100 - ratingPercent}%`}
+                    disabled={!settingsReady}
+                    onChange={(e) =>
+                      updateWeight("ratingWeight", Number(e.target.value) / 100)
+                    }
+                    className="range grow w-full"
+                  />
+                </div>
+                <div className="my-4 flex flex-col gap-2 text-lg text-white">
+                  <div>
+                    <label htmlFor="recommendation-genre-weight">
+                      Balans preferencji
+                    </label>
+                    {": "}
+                    {genrePercent}% gatunek / {100 - genrePercent}% tematyka
+                  </div>
+                  <input
+                    id="recommendation-genre-weight"
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={10}
+                    value={genreWeight * 100}
+                    aria-valuetext={`Gatunek ${genrePercent}%, tematyka ${100 - genrePercent}%`}
+                    disabled={!settingsReady}
+                    onChange={(e) =>
+                      updateWeight("genreWeight", Number(e.target.value) / 100)
+                    }
+                    className="range grow w-full"
+                  />
+                </div>
+                <div className="my-4 flex flex-col gap-2 text-lg text-white">
+                  <div>
+                    <label htmlFor="recommendation-critic-weight">
+                      Balans ocen
+                    </label>
+                    {": "}
+                    {criticPercent}% krytycy / {100 - criticPercent}% gracze
+                  </div>
+                  <input
+                    id="recommendation-critic-weight"
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={10}
+                    value={criticRatingWeight * 100}
+                    aria-valuetext={`Krytycy ${criticPercent}%, gracze ${100 - criticPercent}%`}
+                    disabled={!settingsReady}
+                    onChange={(e) =>
+                      updateWeight(
+                        "criticRatingWeight",
+                        Number(e.target.value) / 100,
+                      )
+                    }
+                    className="range grow w-full"
+                  />
+                </div>
+                <div className="text-center">
+                  <h2 className="font-semibold">Analiza czasowa</h2>
+                  Stosunek twoich czasów gry do średniej globalnej:{" "}
+                  {userPreferences?.avgPlaytimeRatio
+                    ?.toFixed(2)
+                    .replace(".", ",") ?? "Brak danych"}
+                </div>
+                <div className="text-center">
+                  Twoja typowa długość rozgrywki:{" "}
+                  {userPreferences?.timePreference === "long"
+                    ? "Długa"
+                    : userPreferences?.timePreference === "short"
+                      ? "Krótka"
+                      : userPreferences?.timePreference === "medium"
+                        ? "Średnia"
+                        : "Brak danych"}
+                </div>
+                <div className="mt-4 flex flex-col items-center">
+                  <Button
+                    isStandalone={true}
+                    onClick={handleSaveSettings}
+                    disabled={!settingsReady || isSaving}
+                  >
+                    Zapisz
+                  </Button>
+                  <ActionFeedback feedback={feedback} />
+                </div>
+              </div>
             </div>
-            <input
-              id="recommendation-rating-weight"
-              type="range"
-              min={0}
-              max={100}
-              step={10}
-              value={popularityWeight * 100}
-              aria-valuetext={`Oceny ${ratingPercent}%, preferencje ${100 - ratingPercent}%`}
-              disabled={!settingsReady}
-              onChange={(e) =>
-                updateWeight("ratingWeight", Number(e.target.value) / 100)
-              }
-              className="range grow w-full"
-            />
-          </div>
-          <div className="my-4 flex flex-col gap-2 text-lg text-white">
-            <div>
-              <label htmlFor="recommendation-genre-weight">
-                Balans preferencji
-              </label>
-              {": "}
-              {genrePercent}% gatunek / {100 - genrePercent}% tematyka
-            </div>
-            <input
-              id="recommendation-genre-weight"
-              type="range"
-              min={0}
-              max={100}
-              step={10}
-              value={genreWeight * 100}
-              aria-valuetext={`Gatunek ${genrePercent}%, tematyka ${100 - genrePercent}%`}
-              disabled={!settingsReady}
-              onChange={(e) =>
-                updateWeight("genreWeight", Number(e.target.value) / 100)
-              }
-              className="range grow w-full"
-            />
-          </div>
-          <div className="my-4 flex flex-col gap-2 text-lg text-white">
-            <div>
-              <label htmlFor="recommendation-critic-weight">Balans ocen</label>
-              {": "}
-              {criticPercent}% krytycy / {100 - criticPercent}% gracze
-            </div>
-            <input
-              id="recommendation-critic-weight"
-              type="range"
-              min={0}
-              max={100}
-              step={10}
-              value={criticRatingWeight * 100}
-              aria-valuetext={`Krytycy ${criticPercent}%, gracze ${100 - criticPercent}%`}
-              disabled={!settingsReady}
-              onChange={(e) =>
-                updateWeight("criticRatingWeight", Number(e.target.value) / 100)
-              }
-              className="range grow w-full"
-            />
-          </div>
-          <div className="text-center">
-            <h4>Analiza czasowa:</h4>
-            Stosunek twoich czasów gry do średniej globalnej:{" "}
-            {userPreferences?.avgPlaytimeRatio?.toFixed(2).replace(".", ",") ??
-              "Brak danych"}
-          </div>
-          <div className="text-center">
-            Twoja typowa długość rozgrywki:{" "}
-            {userPreferences?.timePreference === "long"
-              ? "Długa"
-              : userPreferences?.timePreference === "short"
-                ? "Krótka"
-                : userPreferences?.timePreference === "medium"
-                  ? "Średnia"
-                  : "Brak danych"}
-          </div>
-          <div className="mt-4 flex flex-col items-center">
-            <Button
-              isStandalone={true}
-              onClick={handleSaveSettings}
-              disabled={!settingsReady || isSaving}
-            >
-              Zapisz
-            </Button>
-            <ActionFeedback feedback={feedback} />
-          </div>
-        </div>
-      </details>
-      <div className="flex flex-col gap-5 w-full max-w-5xl px-4 @min-[80rem]/app-content:max-w-3/5 @min-[80rem]/app-content:px-0">
-        <p role="status" className="text-center text-ui-muted empty:sr-only">
+          </details>
+        </header>
+        <p
+          role="status"
+          className="mt-6 text-center text-ui-muted empty:sr-only"
+        >
           {!data && !loadFailed && "Wczytywanie rekomendacji…"}
           {data && recGames.length === 0 && (
             <>
@@ -252,19 +268,17 @@ function Recommendation() {
             </>
           )}
         </p>
-        <p role="alert" className="text-center text-red-300 empty:sr-only">
+        <p role="alert" className="mt-6 text-center text-red-300 empty:sr-only">
           {loadFailed &&
             "Nie udało się wczytać rekomendacji. Odśwież stronę, aby spróbować ponownie."}
         </p>
-        {recGames.map((rec, index) => (
-          <RecommendationCard
-            key={rec.id}
-            rec={rec}
-            index={index}
+        {recGames.length > 0 && (
+          <RecommendationList
+            games={recGames}
             maxScore={maxScore}
             avgPlaytimeRatio={userPreferences?.avgPlaytimeRatio ?? null}
           />
-        ))}
+        )}
       </div>
     </div>
   );
